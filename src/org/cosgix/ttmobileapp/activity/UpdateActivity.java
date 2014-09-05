@@ -44,21 +44,21 @@ public class UpdateActivity extends Activity implements IResponseHandler, IRespo
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_update);
         //
-        mLoginButton = (Button) this.findViewById(R.id.SignInButton);
-        mLoginButtonListener = new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				processor = new GETRequestProcessor(url,path, WebServicesConst.TT_HTTP_GET,UpdateActivity.this, map, UpdateActivity.this);
-		
-				AsyncTask<String, String, Object> task = 
-				new WebServicesAsyncTask(UpdateActivity.this,UpdateActivity.this.processor);
-				task.execute("Fetch Response");
-			}
-		};
-		mLoginButton.setOnClickListener(mLoginButtonListener);
+//        mLoginButton = (Button) this.findViewById(R.id.SignInButton);
+//        mLoginButtonListener = new OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//				// TODO Auto-generated method stub
+//				processor = new GETRequestProcessor(url,path, WebServicesConst.TT_HTTP_GET,UpdateActivity.this, map, UpdateActivity.this);
+//		
+//				AsyncTask<String, String, Object> task = 
+//				new WebServicesAsyncTask(UpdateActivity.this,UpdateActivity.this.processor);
+//				task.execute("Fetch Response");
+//			}
+//		};
+//		mLoginButton.setOnClickListener(mLoginButtonListener);
     }
 
 	@Override

@@ -6,5 +6,8 @@
     <string name="login">Login !</string>
     <string name="update">Update</string>
     
-
+        <!-- Button text -->
+    <string name="costrategixTextView">Costrategix</string>
+    <string name="timeTrackingTextView">Time Tracking</string>
+    
 </resources>
