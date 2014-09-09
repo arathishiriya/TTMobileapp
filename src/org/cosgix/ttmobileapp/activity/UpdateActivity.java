@@ -1,19 +1,16 @@
 package org.cosgix.ttmobileapp.activity;
 
-import java.util.HashMap;
-
 import android.app.Activity;
-import android.os.AsyncTask;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 
 
-import org.cosgix.ttmobileapp.webservices.*;
+
+
+import org.cosgix.ttmobileapp.services.UpdateService;
 
 
 /**
@@ -26,84 +23,67 @@ import org.cosgix.ttmobileapp.webservices.*;
  * @param 
  * 
  */
-public class UpdateActivity extends Activity implements IResponseHandler, IResponseParser{
-	private static final String TAG = null;
-	private Button mLoginButton;
-	private OnClickListener mLoginButtonListener;
-	private String url = "http://firefly.new.cosdevx.com";
-	private String path = "api/v1/clients";
-	private RequestProcessor processor = null;
-	
-	private HashMap<String, String> map = null;
-	
-	{
-		//map = new HashMap<String, String>();
-		//map.put("callback", "showIP");		
-	}
+public class UpdateActivity extends Activity {
+	@SuppressWarnings("unused")
+	private static final String TAG = "UpdateActivity";
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_update);
-        //
-//        mLoginButton = (Button) this.findViewById(R.id.SignInButton);
-//        mLoginButtonListener = new OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				// TODO Auto-generated method stub
-//				processor = new GETRequestProcessor(url,path, WebServicesConst.TT_HTTP_GET,UpdateActivity.this, map, UpdateActivity.this);
-//		
-//				AsyncTask<String, String, Object> task = 
-//				new WebServicesAsyncTask(UpdateActivity.this,UpdateActivity.this.processor);
-//				task.execute("Fetch Response");
-//			}
-//		};
-//		mLoginButton.setOnClickListener(mLoginButtonListener);
+        //setContentView(R.layout.activity_update);
+        
+      final ProgressDialog ringProgressDialog = new ProgressDialog(this);
+        ringProgressDialog.setTitle("Updating From Server :) ");
+        ringProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        ringProgressDialog.setIndeterminate(true);
+     
+        
+        ringProgressDialog.setCancelable(true);
+        ringProgressDialog.show();
+        
+        
+        startUpdateService();
+ 
+        for(int i = 0;i<1000000;i++)
+        {
+        	//Do nothing...Just testing 
+        }
+        stopUpdateService();
+        ringProgressDialog.dismiss();
+
+		
     }
 
-	@Override
-	public Object parseContent(String content) throws Exception {
-		// TODO Auto-generated method stub
-		return content;
-	}
-
-	@Override
-	public boolean onResponseRecieve(int statusCode, String message) {
-		// TODO Auto-generated method stub
-		Log.d(TAG, "Status Code : " + statusCode);
-		Log.d(TAG, "Message : " + message);
-		
-		if(statusCode == 200)
-		{	
-			return false;
-		}	
-		else 
-		{	
-			
-			return true;
-		}
-	}
-
-	@Override
-	public boolean onResponseContentReceive(String content) {
-		// TODO Auto-generated method stub
-		Log.d(TAG, "Server Response : " + content);
-		return false;
-	}
-
-	@Override
-	public boolean onParsedDataReceive(Object obj) {
-		// TODO Auto-generated method stub
-		Log.d(TAG, "Parsed Object : " + obj);
-		return false;
-		
-	}
-
-	@Override
-	public void onRequestFailed(Exception e) {
-		// TODO Auto-generated method stub
-		Log.e(TAG, "Error : " + e);
-	}
 	
+	 private void startUpdateService(){
+	    	if (!isUpdateServiceRunning()) {
+	    		// use this to start and trigger a service
+	    		Intent serviceIntent= new Intent(this, UpdateService.class);
+	    		// potentially add data to the intent
+	    		    		
+	    		startService(serviceIntent);
+	    		serviceIntent=null;;
+	    		//testing the dismiss progress Dialog
+	    		
+	    	}//end if not running
+	    }//end startUpdateService
+	    
+	    private void stopUpdateService(){
+	    	if (isUpdateServiceRunning()) {
+	    	    Intent serviceIntent=new Intent(this,UpdateService.class);
+	    	    stopService(serviceIntent);
+	    	    serviceIntent=null;
+	    	}//end if running
+	    }//end stopUpdateService
+	    // Check to see if the Update Service is running
+	    private boolean isUpdateServiceRunning() {
+	        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+	        for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+	            if ("org.cosgix.ttmobileapp.services.UpdateService".equals(service.service.getClassName())) {
+	                return true;
+	            }
+	        }
+	        return false;
+	    }
 	
 }
