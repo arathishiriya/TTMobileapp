@@ -298,9 +298,6 @@ public String getResponseContent(InputStream input)
 }
 
 
-/* (non-Javadoc)
- * @see org.cosgix.android.rest.COSRestResponseContentParser#parseContent(java.lang.String)
- */
 @Override
 public Object parseContent(String content) throws Exception
 {

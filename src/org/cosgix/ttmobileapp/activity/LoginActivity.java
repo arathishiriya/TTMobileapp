@@ -1,5 +1,7 @@
 package org.cosgix.ttmobileapp.activity;
 
+import org.cosgix.ttmobileapp.R;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
