@@ -5,9 +5,22 @@
     <string name="hello_CoStrategix">hello CoStrategix !</string>
     <string name="login">Login !</string>
     <string name="update">Update</string>
-    
-        <!-- Button text -->
-    <string name="costrategixTextView">Costrategix</string>
-    <string name="timeTrackingTextView">Time Tracking</string>
-    
+    <string name="TimeEntryActivity">TimeEntryActivity</string>
+    <string name="ProjectListActivity">ProjectListActivity</string>
+    <string name="WorkTypeActivity">WorkTypeActivity</string>
+    <string name="addtimeentry">Add Time entry</string>
+    <string name="Description">Description:</string>
+    <string name="addEntrybutton">ADD ENTRY</string>
+    <string name="AddEntryActivity">AddEntryActivity</string>
+    <string name="selectaproject">Select a Project</string>
+    <string name="selectaworktype">Select a WorkType</string>
+    <string name="starttimetext">Start Time</string>
+    <string name="endtimetext">End Time</string>
+    <string name="timeentrysuccessful">Time Entry Successful</string>
+    <string name="wanttoaddmore">Want to add one more?</string>
+    <string name="Yes">Yes</string>
+    <string name="No">No</string>
+
+    <!-- Button text -->
+
 </resources>

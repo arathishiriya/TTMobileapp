@@ -8,9 +8,6 @@ import android.content.IntentSender.SendIntentException;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Toast;
-
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.SignInButton;
@@ -35,6 +32,7 @@ import com.google.android.gms.plus.Plus;
 public class LoginActivity extends Activity implements OnClickListener,
 ConnectionCallbacks, OnConnectionFailedListener {
 
+	// variables declaration
 	private static final int RC_SIGN_IN = 0;
 
 	// Google client to interact with Google API
@@ -58,7 +56,7 @@ ConnectionCallbacks, OnConnectionFailedListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
 
-		//
+		// sign in button initialization
 		mLoginButton = (SignInButton) findViewById(R.id.SignInButton);
 
 		// Button click listeners
@@ -73,12 +71,18 @@ ConnectionCallbacks, OnConnectionFailedListener {
 
 	}
 
+	/**
+	 * method used to connect the google api
+	 */
 	protected void onStart() {
 		super.onStart();
 		//GEt connected to the google server
 		mGoogleApiClient.connect();
 	}
 
+	/**
+	 * method used to disconnect the google api
+	 */
 	protected void onStop() {
 		super.onStop();
 		if (mGoogleApiClient.isConnected()) {
@@ -91,7 +95,7 @@ ConnectionCallbacks, OnConnectionFailedListener {
 	 * Method to resolve any signin errors
 	 * */
 	private void resolveSignInError() {
-		
+
 		if (mConnectionResult.hasResolution()) {
 			try {
 				mIntentInProgress = true;
@@ -105,7 +109,7 @@ ConnectionCallbacks, OnConnectionFailedListener {
 
 	@Override
 	public void onConnectionFailed(ConnectionResult result) {
-		
+
 		if (!result.hasResolution()) {
 			GooglePlayServicesUtil.getErrorDialog(result.getErrorCode(), this,
 					0).show();
@@ -145,7 +149,6 @@ ConnectionCallbacks, OnConnectionFailedListener {
 	@Override
 	public void onConnected(Bundle arg0) {
 		mSignInClicked = false;
-		Toast.makeText(this, "Login succesful.. !", Toast.LENGTH_LONG).show();
 
 		// Update the UI after signin
 		updateUI(true);
@@ -163,7 +166,7 @@ ConnectionCallbacks, OnConnectionFailedListener {
 			mLoginButton.setVisibility(View.VISIBLE);
 		}
 	}
-	
+
 	/**
 	 * method used for invoking Update activity
 	 */
@@ -171,12 +174,12 @@ ConnectionCallbacks, OnConnectionFailedListener {
 
 		Intent intent = new Intent(LoginActivity.this,UpdateActivity.class);
 		startActivity(intent);
-		
+
 	}
 
 	@Override
 	public void onConnectionSuspended(int arg0) {
-		
+
 		//Making sure we connect to the client in case the connection gets suspended
 		mGoogleApiClient.connect();
 		updateUI(false);

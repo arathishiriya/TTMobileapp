@@ -1,4 +1,5 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
@@ -16,5 +17,12 @@
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
+
+    <style name="MyCustomThemeNoTitleBar" parent="@android:style/Theme.Holo.Light">
+        <item name="android:actionBarStyle">@style/MyActionBarThemeNoTitleBar</item>
+        <item name="android:windowActionBarOverlay">true</item>
+    </style>
+
+    <style name="MyActionBarThemeNoTitleBar" parent="@android:style/Theme.Light.NoTitleBar.Fullscreen"></style>
 
 </resources>

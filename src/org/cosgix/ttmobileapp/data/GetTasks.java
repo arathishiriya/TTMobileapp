@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
 import org.cosgix.ttmobileapp.webservices.Const;
 import org.cosgix.ttmobileapp.webservices.GETRequestProcessor;
 import org.cosgix.ttmobileapp.webservices.IResponseHandler;
@@ -19,8 +18,15 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+/**
+ * This class provides the tasks from server
+ * 
+ * @author Sanjib
+ *
+ */
 public class GetTasks implements IResponseHandler,IResponseParser{
-	
+
+	// variables declaration
 	private Context context;
 	private boolean downloadTasksStatus = false;
 	private static final String TAG = "GetTasks";
@@ -29,21 +35,21 @@ public class GetTasks implements IResponseHandler,IResponseParser{
 	protected  ITasks iTasks;
 	JSONArray jsonArray;
 	JSONObject jsonObj;
-	
 
 	public String response;
-	
+
 	public RequestProcessor processor = null;
 	int Projectid;
 
+	// getter method for project id
 	public int getProjectid() {
 		return Projectid;
 	}
 
+	// setter method for project id
 	public void setProjectid(int projectid) {
 		Projectid = projectid;
 	}
-	
 
 	private HashMap<String, String> map = null;
 
@@ -51,50 +57,56 @@ public class GetTasks implements IResponseHandler,IResponseParser{
 		//map = new HashMap<String, String>();
 		//map.put("callback", "showIP");		
 	}
-	
+
+	/**
+	 * method used as a constructor to initialize
+	 * @param context
+	 */
 	public GetTasks(Context context) {
-		
+
 		this.context = context;
 		this.iTasks = (ITasks) context;
 		taskList = new ArrayList<Tasks>();
-		
+
 		processor = new GETRequestProcessor(Const.SERVER_URL,Const.GET_TASK_PATH+Projectid, WebServicesConst.TT_HTTP_GET,this , map, this);
-		
+
 		AsyncTask<String, String, Object> task = 
 				new WebServicesAsyncTask(context,processor);
 		task.execute("Fetch Response");
-		
+
 	}
-	
-public GetTasks(Context context,int projectid) {
-		
+
+	/**
+	 * method used as a constructor to initialize with project id
+	 * @param context
+	 * @param projectid
+	 */
+	public GetTasks(Context context,int projectid) {
+
 		this.context = context;
 		this.iTasks = (ITasks) context;
 		taskList = new ArrayList<Tasks>();
-		
+
 		processor = new GETRequestProcessor(Const.SERVER_URL,Const.GET_TASK_PATH+projectid, WebServicesConst.TT_HTTP_GET,this , map, this);
-		
+
 		AsyncTask<String, String, Object> task = 
 				new WebServicesAsyncTask(context,processor);
 		task.execute("Fetch Response");
-		
+
 	}
-	
+
 
 	@Override
 	public boolean onResponseRecieve(int statusCode, String message) {
 
 		Log.i(TAG,"GetTasks Status Code : " + statusCode);
 		Log.i(TAG,"GetTasks Message : " + message);
-		
-		if(statusCode == 200)
-		{	
-			
-			
+
+		if(statusCode == 200) {	
+
 			return false;
 		}	
-		else 
-		{	
+		else {	
 
 			return true;
 		}
@@ -102,17 +114,15 @@ public GetTasks(Context context,int projectid) {
 
 	@Override
 	public boolean onResponseContentReceive(String content) {
+
 		Log.i(TAG,"GetTasks Server Response : " + content);
-		if(content != null)
-		{
+		if(content != null) {
 			response = content;
 			downloadTasksStatus = true;
 		}
 		taskList = getListOfTasks();
-		
-	
-		if (this.iTasks != null)
-		{
+
+		if (this.iTasks != null) {
 			iTasks.tasksDownloadDone(taskList);
 		}
 		return false;
@@ -129,47 +139,57 @@ public GetTasks(Context context,int projectid) {
 	public void onRequestFailed(Exception e) {
 		Log.e(TAG,"GetTasks Error : " + e);
 	}
-	
+
+	/**
+	 * method used to get the tasks download status
+	 * @return downloadTasksStatus
+	 */
 	public boolean isDownloadTasksStatus() {
 		return downloadTasksStatus;
 	}
 
-
+	/**
+	 * method used to set tasks download status
+	 * @param downloadTasksStatus
+	 */
 	public void setDownloadTasksStatus(boolean downloadTasksStatus) {
 		this.downloadTasksStatus = downloadTasksStatus;
 	}
 
+	/**
+	 * method used to get the list of tasks
+	 * @return taskList
+	 */
 	public List<Tasks> getListOfTasks() {
-		
+
 		if((response!=null) && (isDownloadTasksStatus())){
-	
-		try {
-			
-			jsonArray = new JSONArray(response);
-			
-			for(int i = 0; i < jsonArray.length(); i++) {
-				
-				Tasks tasks = new Tasks();
-				
-				jsonObj = jsonArray.getJSONObject(i);
-				
-				int taskId = jsonObj.getInt("id");
-				String taskName = jsonObj.getString("name");
-				
-			
-				tasks.setTaskId(taskId);
-				tasks.setTaskName(taskName);
 
-				Log.i(TAG,"Tasks details" + tasks.getTaskId() + tasks.getTaskName());
-				
-				taskList.add(tasks);
-				
+			try {
+
+				jsonArray = new JSONArray(response);
+
+				for(int i = 0; i < jsonArray.length(); i++) {
+
+					Tasks tasks = new Tasks();
+
+					jsonObj = jsonArray.getJSONObject(i);
+
+					int taskId = jsonObj.getInt("id");
+					String taskName = jsonObj.getString("name");
+
+
+					tasks.setTaskId(taskId);
+					tasks.setTaskName(taskName);
+
+					Log.i(TAG,"Tasks details" + tasks.getTaskId() + tasks.getTaskName());
+
+					taskList.add(tasks);
+
+				}
+
+			} catch(Exception e) {
+				Log.i(TAG,"Json Tasks error");
 			}
-	
-
-		} catch(Exception e) {
-			Log.i(TAG,"Json Tasks error");
-		}
 		}
 		return taskList;
 
@@ -177,9 +197,7 @@ public GetTasks(Context context,int projectid) {
 
 	@Override
 	public Object parseContent(String content) throws Exception {
-		// TODO Auto-generated method stub
 		return null;
 	}
-
 
 }
