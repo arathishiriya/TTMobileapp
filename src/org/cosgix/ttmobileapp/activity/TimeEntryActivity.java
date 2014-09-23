@@ -59,6 +59,10 @@ public class TimeEntryActivity extends Activity implements ITasks {
 	String message;
 	String worktype_message;
 	String addentry_message;
+	
+	String taskName;
+	
+	private boolean  mTasksListLoaded = false;
 
 	String descriptionText;
 
@@ -83,7 +87,16 @@ public class TimeEntryActivity extends Activity implements ITasks {
 	List<TimeEntry> timeEntryList;
 	TimeEntryArrayAdapter shareAdapter;
 	GetTasks getTasks;
-	List<Tasks> TasksList;
+	List<Tasks> mTasksList;
+	static List<Tasks> TasksList;
+
+	public static List<Tasks> getTasksList() {
+		return TasksList;
+	}
+
+	public void setTasksList(List<Tasks> tasksList) {
+		TasksList = tasksList;
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -167,6 +180,15 @@ public class TimeEntryActivity extends Activity implements ITasks {
 					break;
 				case 1:
 					// task clicked
+					if(mTasksListLoaded)
+					{
+
+						invokeTasksListActivity();
+					}
+					else
+					{
+						Log.d(TAG,"Please wait, data downloading from the server");
+					}
 					break;
 				case 2:
 					// work type clicked
@@ -193,6 +215,19 @@ public class TimeEntryActivity extends Activity implements ITasks {
 		startActivityForResult(intent, 1);
 
 	}
+	
+	protected void invokeTasksListActivity() {
+
+        if(mTasksList != null) {		
+		Log.i(TAG, "LoginActivity invoke TasksListActivity");
+		Intent intent = new Intent(TimeEntryActivity.this,TaskListActivity.class);
+		startActivityForResult(intent, 4);
+        }
+        else {
+    		Log.i(TAG, "taskName is null");
+        }
+		
+	}
 
 	/**
 	 * method used for invoking WorkTypeActivity 
@@ -214,12 +249,15 @@ public class TimeEntryActivity extends Activity implements ITasks {
 			if(requestCode == 1) { 
 
 				message = data.getStringExtra("PROJECT_MESSAGE");
-				int project_selected_index =  data.getIntExtra("PROJECT_SELECTED",0);
+				int selected_projectId =  data.getIntExtra("PROJECT_SELECTED",0);
 
-				getTasks = new GetTasks(TimeEntryActivity.this,project_selected_index);
+				getTasks = new GetTasks(TimeEntryActivity.this,selected_projectId);
+				TasksList = getTasks.getListOfTasks();
+				taskName = getTasks.getTaskName();
 
 				Log.d(TAG,"message" + message);
-				shareAdapter.remove(shareAdapter.getItem(0));
+				//shareAdapter.remove(shareAdapter.getItem(0));
+				timeEntryList.remove(0);
 				timeEntry.setTimeEntryName(message);
 				timeEntryList.add(0,timeEntry);
 				shareAdapter.notifyDataSetChanged();
@@ -231,7 +269,8 @@ public class TimeEntryActivity extends Activity implements ITasks {
 				int worktype_selected_index =  data.getIntExtra("WORKTYPE_SELECTED",0);
 
 				Log.d(TAG,"worktype_message" + worktype_message);
-				shareAdapter.remove(shareAdapter.getItem(2));
+				//shareAdapter.remove(shareAdapter.getItem(2));
+				timeEntryList.remove(2);
 				timeEntry.setTimeEntryName(worktype_message);
 				timeEntryList.add(2,timeEntry);
 				shareAdapter.notifyDataSetChanged();
@@ -249,6 +288,18 @@ public class TimeEntryActivity extends Activity implements ITasks {
 				this.recreate();
 
 			}  
+			
+			if(requestCode == 4) { 
+
+				shareAdapter.notifyDataSetChanged();
+				taskName = getTasks.getTaskName();
+				Log.d(TAG,"taskName" + taskName);
+				timeEntryList.remove(1);
+				timeEntry.setTimeEntryName(taskName);
+				timeEntryList.add(1,timeEntry);
+				shareAdapter.notifyDataSetChanged();
+
+			}
 		}
 
 	}
@@ -264,10 +315,8 @@ public class TimeEntryActivity extends Activity implements ITasks {
 
 		// get the tasks list if not null 
 		if(tasksList != null) {
-			TasksList = tasksList;
-		}
-		else {
-			Log.e(TAG, "Task List is null");
+			mTasksList = tasksList;
+			mTasksListLoaded = true;
 		}
 
 		return false;
@@ -412,7 +461,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 		// set current time into textview
 		startTimeText.setText(new StringBuilder().append(padding_str(hour)).append(":").append(padding_str(minute)).append(getTimeFormat()).toString());
 
-		endTimeText.setText(new StringBuilder().append(padding_str(hour)).append(":").append(padding_str(minute)).append(getTimeFormat()).toString());
+		endTimeText.setText(new StringBuilder().append(padding_str(00)).append(":").append(padding_str(00)).append(getTimeFormat()).toString());
 
 	}
 

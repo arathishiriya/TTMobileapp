@@ -49,6 +49,10 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
+            android:name=".activity.TaskListActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name=".activity.AddEntryActivity"
             android:screenOrientation="portrait"
             android:theme="@style/MyCustomThemeNoTitleBar" >

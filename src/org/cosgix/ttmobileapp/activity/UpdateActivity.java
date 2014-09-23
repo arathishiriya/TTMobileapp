@@ -181,6 +181,7 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 			// Set progress dialog message
 			progressDialog.setMessage("Data loading");
 			progressDialog.setIndeterminate(false);
+			progressDialog.setCancelable(false);
 
 			if(!progressDialog.isShowing()) {
 				// Show progress dialog

@@ -1,14 +1,12 @@
 package org.cosgix.ttmobileapp.activity;
 
-import org.cosgix.ttmobileapp.R;
-import org.cosgix.ttmobileapp.data.Projects;
-import org.cosgix.ttmobileapp.data.Tasks;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import org.cosgix.ttmobileapp.R;
+import org.cosgix.ttmobileapp.data.Tasks;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
@@ -24,25 +22,23 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.LinearLayout.LayoutParams;
 
-/**
- * This class provides the Project list to display
- * @author Sanjib
- *
- */
-public class ProjectListActivity extends Activity {
+public class TaskListActivity extends Activity {
 
 	// variables declaration
-	private static final String TAG = "ProjectListActivity";
+	private static final String TAG = "TaskListActivity";
 	
 	private int position;
-	String[] PROJECTS;
+	String[] TASKS;
+	String[] ALPHABETS_LIST = new String[] {"A","B","C","D","E","F","G",
+			"H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V",
+			"W","X","Y","Z"};
 
 	ListView listview;
 	private GestureDetector mGestureDetector;
@@ -66,42 +62,40 @@ public class ProjectListActivity extends Activity {
 	double delta;
 	TextView tmpTV;
 	LinearLayout sideIndex ;
-	List<Projects> projectsList;
-	List<Tasks> tasksList;
-	String mTasks;
+	List<Tasks> taskList;
 	
+	
+
 	HashMap<String, String> hashmap = new HashMap<String, String>();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_projectlist);
-
+		setContentView(R.layout.activity_tasklist);
+		
 		showActionBar();
 		getOverflowMenu();
 
 		// don't forget to sort our array (in case it's not sorted)
-		projectsList=UpdateActivity.getProjectsList();
-		//tasksList = UpdateActivity.getTasksList();
-		PROJECTS = new String[projectsList.size()];
+		taskList = TimeEntryActivity.getTasksList();
+		TASKS = new String[taskList.size()];
 		int i = 0;
-		for(Projects projects : projectsList) {
-			PROJECTS[i++] = projects.getProjectName();
-			//tempProjectid = projects.getProjectId();
+		for(Tasks tasks : taskList) {
+			TASKS[i++] = tasks.getTaskName();
 		}
 		
-//		Arrays.sort(PROJECTS,String.CASE_INSENSITIVE_ORDER);
-
+//		Arrays.sort(TASKS,String.CASE_INSENSITIVE_ORDER);
+		
 		listview = (ListView) findViewById(R.id.ListView01);
 
-		listview.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, PROJECTS));
+		listview.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, TASKS));
 		mGestureDetector = new GestureDetector(this, new SideIndexGestureListener());
 
 		listItemClickEvent();
 
 	}
-
+	
 	/**
 	 * method used to display the action bar
 	 */
@@ -110,7 +104,7 @@ public class ProjectListActivity extends Activity {
 		ActionBar actionBar = getActionBar();
 		// Enabling Up / Back navigation
 		actionBar.setDisplayHomeAsUpEnabled(true);
-		actionBar.setTitle(getResources().getString(R.string.selectaproject)); 
+		actionBar.setTitle(getResources().getString(R.string.selectatasks)); 
 		actionBar.setIcon(R.drawable.ic_time);
 		//actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.add_blue_btn));
 		actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.lightskyblue)));
@@ -131,9 +125,8 @@ public class ProjectListActivity extends Activity {
 				position = pos;
 
 				Intent intent = new Intent();  
-				intent.putExtra("PROJECT_MESSAGE",adapterView.getItemAtPosition(pos).toString());
-				intent.putExtra("PROJECT_SELECTED", projectsList.get(pos).getProjectId());
-				setResult(1,intent);  
+				intent.putExtra("TASKS_MESSAGE",adapterView.getItemAtPosition(pos).toString());
+				setResult(4,intent);  
 
 				finish();//finishing activity  
 
@@ -205,6 +198,8 @@ public class ProjectListActivity extends Activity {
 	public void onWindowFocusChanged(boolean hasFocus) {
 
 		super.onWindowFocusChanged(hasFocus);
+		
+		try {
 
 		sideIndex = (LinearLayout) findViewById(R.id.sideIndex);
 		sideIndexHeight = sideIndex.getHeight();
@@ -214,7 +209,9 @@ public class ProjectListActivity extends Activity {
 		tmpTV = null;
 
 		// we'll create the index list
-		indexList = createIndex(PROJECTS);
+		//indexList = createIndex(WORKTYPES);
+		//indexList = createIndex(ALPHABETS_LIST);
+		indexList = createIndex(TASKS);
 
 		// number of items in the index List
 		indexListSize = indexList.size();
@@ -240,14 +237,14 @@ public class ProjectListActivity extends Activity {
 			tmpIndexItem = indexList.get((int) i - 1);
 			tmpLetter = tmpIndexItem[0].toString();
 
-			Log.d(TAG, "tmpLetter"+ tmpLetter);
+			Log.d(TAG, "tmpLetter" + tmpLetter);
 
 			hashmap.put("key", tmpLetter);
 
 			tmpTV = new TextView(this);
 			tmpTV.setText(tmpLetter);
 			tmpTV.setGravity(Gravity.CENTER);
-			tmpTV.setTextSize(20);
+			tmpTV.setTextSize(17);
 			LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1);
 			tmpTV.setLayoutParams(params);
 			//			sideIndex.addView(tmpTV);
@@ -279,6 +276,10 @@ public class ProjectListActivity extends Activity {
 				return false;
 			}
 		});
+		
+		} catch(Exception e) {
+			
+		}
 
 	}
 
@@ -362,7 +363,7 @@ public class ProjectListActivity extends Activity {
 			int indexMin = Integer.parseInt(indexItem[1].toString());
 			int indexMax = Integer.parseInt(indexItem[2].toString());
 			int indexDelta = Math.max(1, indexMax - indexMin);
-			
+
 			Log.d(TAG, "indexMin & indexMax & indexDelta" + indexMin + "\n" 
 					+ "\n" + indexMax + "\n" + indexDelta);
 
@@ -378,7 +379,7 @@ public class ProjectListActivity extends Activity {
 			e.printStackTrace();
 		}
 	}
-
+	
 	// inflate for action bar
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -398,7 +399,7 @@ public class ProjectListActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	// put the other menu 
+	// put the other menu
 	private void getOverflowMenu() {
 
 		try {
@@ -414,5 +415,6 @@ public class ProjectListActivity extends Activity {
 		}
 
 	}
+ 
 
 }
