@@ -58,7 +58,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 	private TextView dateText;
 	private TextView startTimeText;
 	private TextView endTimeText;
-	private Button addEntrybutton;
+	private Button addEntrybutton, addToFavorites;
 
 	String message;
 	String worktype_message;
@@ -142,6 +142,16 @@ public class TimeEntryActivity extends Activity implements ITasks {
 		showCurrentTime();
 		showTimePickerDialog();
 
+//		addToFavorites.setOnClickListener(new OnClickListener() {
+//            
+//            @Override
+//            public void onClick(View v) {
+//                // TODO Auto-generated method stub
+//                Intent startFavoritesIntent = new Intent(TimeEntryActivity.this, FavoritesActivity.class);
+//                startActivity(startFavoritesIntent);
+//            }
+//        });
+//		
 	}
 
 	/**
@@ -167,7 +177,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 		startTimeText = (TextView)findViewById(R.id.starttime);
 		endTimeText = (TextView)findViewById(R.id.endtime);
 		addEntrybutton = (Button)findViewById(R.id.addEntrybutton);
-
+		//addToFavorites = (Button)findViewById(R.id.btnfavorites);
 		addEntrybutton.setVisibility(View.GONE);
 
 	}
