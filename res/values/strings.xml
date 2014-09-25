@@ -14,13 +14,19 @@
     <string name="AddEntryActivity">AddEntryActivity</string>
     <string name="selectaproject">Select a Project</string>
     <string name="selectaworktype">Select a WorkType</string>
-    <string name="selectatasks">Select a Tasks</string>
+    <string name="selectatasks">Select a Task</string>
     <string name="starttimetext">Start Time</string>
     <string name="endtimetext">End Time</string>
     <string name="timeentrysuccessful">Time Entry Successful</string>
     <string name="wanttoaddmore">Want to add one more?</string>
     <string name="Yes">Yes</string>
     <string name="No">No</string>
+    <string name="Pleasewait">Please wait</string>
+    <string name="datadownloading">Data Loading...</string>
+    <string name="Ok">Ok</string>
+    <string name="taskmessage">Task Message</string>
+    <string name="taskstatus">Task not available</string>
+    <string name="selectaprojectbeforetask">Please Select a Project first</string>
 
     <!-- Button text -->
 

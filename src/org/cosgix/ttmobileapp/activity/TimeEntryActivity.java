@@ -9,15 +9,19 @@ import org.cosgix.ttmobileapp.adapter.TimeEntryArrayAdapter;
 import org.cosgix.ttmobileapp.data.GetTasks;
 import org.cosgix.ttmobileapp.data.ITasks;
 import org.cosgix.ttmobileapp.data.Tasks;
+import org.cosgix.ttmobileapp.data.TimeEntryData;
+
 import android.app.ActionBar;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.util.Log;
@@ -60,8 +64,13 @@ public class TimeEntryActivity extends Activity implements ITasks {
 	String worktype_message;
 	String addentry_message;
 	
+	int selected_projectId;
+	int worktype_selected_index;
+	int selected_taskId;
+
 	String taskName;
-	
+
+	private boolean  mProjectClicked = false;
 	private boolean  mTasksListLoaded = false;
 
 	String descriptionText;
@@ -80,6 +89,10 @@ public class TimeEntryActivity extends Activity implements ITasks {
 
 	static final int START_TIME_PICKER_ID = 2;
 	static final int END_TIME_PICKER_ID = 3;
+	
+	String mDate;
+	String timeIn;
+	String timeOut;
 
 	InputMethodManager inputMethodManager;
 
@@ -97,6 +110,8 @@ public class TimeEntryActivity extends Activity implements ITasks {
 	public void setTasksList(List<Tasks> tasksList) {
 		TasksList = tasksList;
 	}
+	
+	TimeEntryData  timeEntryData;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -180,14 +195,16 @@ public class TimeEntryActivity extends Activity implements ITasks {
 					break;
 				case 1:
 					// task clicked
-					if(mTasksListLoaded)
-					{
+					if(!mProjectClicked) {
+                       showSelectProjectAlertMessage();
+					}
+					else if(mProjectClicked && mTasksListLoaded) {
 
 						invokeTasksListActivity();
 					}
-					else
-					{
+					else {
 						Log.d(TAG,"Please wait, data downloading from the server");
+						showDownloadingAlertMessage();
 					}
 					break;
 				case 2:
@@ -207,6 +224,52 @@ public class TimeEntryActivity extends Activity implements ITasks {
 	}
 
 	/**
+	 * method used to display downloading message
+	 */
+	protected void showDownloadingAlertMessage() {
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(TimeEntryActivity.this);
+		builder.setTitle(getResources().getString(R.string.Pleasewait));
+		builder.setMessage(getResources().getString(R.string.datadownloading));
+		builder.setPositiveButton(getResources().getString(R.string.Ok), new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int arg1) {
+
+				dialog.cancel();
+				dialog.dismiss();
+
+			}
+		});
+		AlertDialog alertDialog = builder.create();
+		alertDialog.show();
+
+	}
+	
+	/**
+	 * method used to display select project message
+	 */
+	protected void showSelectProjectAlertMessage() {
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(TimeEntryActivity.this);
+		builder.setTitle(getResources().getString(R.string.Pleasewait));
+		builder.setMessage(getResources().getString(R.string.selectaprojectbeforetask));
+		builder.setPositiveButton(getResources().getString(R.string.Ok), new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int arg1) {
+
+				dialog.cancel();
+				dialog.dismiss();
+
+			}
+		});
+		AlertDialog alertDialog = builder.create();
+		alertDialog.show();
+
+	}
+
+	/**
 	 * method used for invoking ProjectListActivity 
 	 */
 	private void invokeProjectListActivity() {
@@ -215,18 +278,18 @@ public class TimeEntryActivity extends Activity implements ITasks {
 		startActivityForResult(intent, 1);
 
 	}
-	
+
 	protected void invokeTasksListActivity() {
 
-        if(mTasksList != null) {		
-		Log.i(TAG, "LoginActivity invoke TasksListActivity");
-		Intent intent = new Intent(TimeEntryActivity.this,TaskListActivity.class);
-		startActivityForResult(intent, 4);
-        }
-        else {
-    		Log.i(TAG, "taskName is null");
-        }
-		
+		if(mTasksList != null) {		
+			Log.i(TAG, "LoginActivity invoke TasksListActivity");
+			Intent intent = new Intent(TimeEntryActivity.this,TaskListActivity.class);
+			startActivityForResult(intent, 4);
+		}
+		else {
+			Log.i(TAG, "taskName is null");
+		}
+
 	}
 
 	/**
@@ -249,7 +312,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 			if(requestCode == 1) { 
 
 				message = data.getStringExtra("PROJECT_MESSAGE");
-				int selected_projectId =  data.getIntExtra("PROJECT_SELECTED",0);
+				selected_projectId =  data.getIntExtra("PROJECT_SELECTED",0);
 
 				getTasks = new GetTasks(TimeEntryActivity.this,selected_projectId);
 				TasksList = getTasks.getListOfTasks();
@@ -262,11 +325,13 @@ public class TimeEntryActivity extends Activity implements ITasks {
 				timeEntryList.add(0,timeEntry);
 				shareAdapter.notifyDataSetChanged();
 
+				mProjectClicked = true;
+
 			}  
 			if(requestCode == 2) { 
 
 				worktype_message = data.getStringExtra("WORKTYPE_MESSAGE");
-				int worktype_selected_index =  data.getIntExtra("WORKTYPE_SELECTED",0);
+				worktype_selected_index =  data.getIntExtra("WORKTYPE_SELECTED",0);
 
 				Log.d(TAG,"worktype_message" + worktype_message);
 				//shareAdapter.remove(shareAdapter.getItem(2));
@@ -288,11 +353,12 @@ public class TimeEntryActivity extends Activity implements ITasks {
 				this.recreate();
 
 			}  
-			
+
 			if(requestCode == 4) { 
 
 				shareAdapter.notifyDataSetChanged();
 				taskName = getTasks.getTaskName();
+				selected_taskId = getTasks.getTaskId();
 				Log.d(TAG,"taskName" + taskName);
 				timeEntryList.remove(1);
 				timeEntry.setTimeEntryName(taskName);
@@ -335,8 +401,6 @@ public class TimeEntryActivity extends Activity implements ITasks {
 				// Show soft keyboard for the user to enter the value.
 				inputMethodManager.showSoftInput(descriptionEditText, InputMethodManager.SHOW_FORCED);
 
-				descriptionText = descriptionEditText.getText().toString();
-
 			}
 		});
 
@@ -348,6 +412,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 					//do what you want
 
 					if(descriptionEditText.getText().length() > 0) {
+						descriptionText = descriptionEditText.getText().toString();
 						addEntrybutton.setVisibility(View.VISIBLE);
 						addEntryEvent();
 					}
@@ -412,10 +477,12 @@ public class TimeEntryActivity extends Activity implements ITasks {
 	// Show current date
 	private void showCurrentDate() {
 
-		dateText.setText(new StringBuilder()
+		mDate = new StringBuilder()
 		// Month is 0 based, just add 1
 		.append(month + 1).append("-").append(day).append("-")
-		.append(year).append(" "));
+		.append(year).append(" ").toString();
+		
+		dateText.setText(mDate);
 
 	}
 
@@ -457,11 +524,14 @@ public class TimeEntryActivity extends Activity implements ITasks {
 
 	// Show current time
 	private void showCurrentTime() {
-
+		
+		timeIn = new StringBuilder().append(padding_str(hour)).append(":").append(padding_str(minute)).append(getTimeFormat()).toString();
+        timeOut = new StringBuilder().append(padding_str(00)).append(":").append(padding_str(00)).append(getTimeFormat()).toString();
+		
 		// set current time into textview
-		startTimeText.setText(new StringBuilder().append(padding_str(hour)).append(":").append(padding_str(minute)).append(getTimeFormat()).toString());
+		startTimeText.setText(timeIn);
 
-		endTimeText.setText(new StringBuilder().append(padding_str(00)).append(":").append(padding_str(00)).append(getTimeFormat()).toString());
+		endTimeText.setText(timeOut);
 
 	}
 
@@ -497,9 +567,11 @@ public class TimeEntryActivity extends Activity implements ITasks {
 		public void onTimeSet(TimePicker view, int selectedHour, int selectedMinute) {
 			hour = selectedHour;
 			minute = selectedMinute;
+			
+	        timeIn = new StringBuilder().append(padding_str(hour)).append(":").append(padding_str(minute)).append(getTimeFormat()).toString();
 
 			// set current time into textview
-			startTimeText.setText(new StringBuilder().append(padding_str(hour)).append(":").append(padding_str(minute)).append(getTimeFormat()).toString());
+			startTimeText.setText(timeIn);
 
 
 		}
@@ -511,8 +583,10 @@ public class TimeEntryActivity extends Activity implements ITasks {
 			hour = selectedHour;
 			minute = selectedMinute;
 
+	        timeOut = new StringBuilder().append(padding_str(hour)).append(":").append(padding_str(minute)).append(getTimeFormat()).toString();
+			
 			// set current time into textview
-			endTimeText.setText(new StringBuilder().append(padding_str(hour)).append(":").append(padding_str(minute)).append(getTimeFormat()).toString());
+			endTimeText.setText(timeOut);
 
 
 		}
@@ -564,9 +638,16 @@ public class TimeEntryActivity extends Activity implements ITasks {
 
 			@Override
 			public void onClick(View arg0) {
+				
+				// create json data
+				timeEntryData = new TimeEntryData(selected_projectId, selected_taskId, worktype_selected_index, descriptionText, mDate, timeIn, timeOut);
+				timeEntryData.createJsonData();
 
 				Intent intent = new Intent(TimeEntryActivity.this,AddEntryActivity.class);
 				startActivityForResult(intent,3);
+				
+				// write json data to a file
+				timeEntryData.writeJsonDatatoFile();
 
 			}
 		});

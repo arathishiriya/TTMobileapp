@@ -38,6 +38,16 @@ public class GetTasks implements IResponseHandler,IResponseParser{
 
 	public String response;
 	
+	public int taskId;
+	
+	public int getTaskId() {
+		return taskId;
+	}
+
+	public void setTaskId(int taskId) {
+		this.taskId = taskId;
+	}
+
 	public String taskName;
 
 	public String getTaskName() {
@@ -184,7 +194,7 @@ public class GetTasks implements IResponseHandler,IResponseParser{
 
 					jsonObj = jsonArray.getJSONObject(i);
 
-					int taskId = jsonObj.getInt("id");
+					taskId = jsonObj.getInt("id");
 					taskName = jsonObj.getString("name");
 
 
