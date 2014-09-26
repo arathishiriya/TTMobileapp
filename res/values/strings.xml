@@ -30,8 +30,9 @@
     <string name="taskmessage">Task Message</string>
     <string name="taskstatus">Task not available</string>
     <string name="selectaprojectbeforetask">Please Select a Project first</string>
- 	<string name="str_btn_show">Select a color</string>
+    <string name="str_btn_show">Select a color</string>
     <string name="btn_save">SAVE</string>
+
     <!-- Button text -->
 
 </resources>

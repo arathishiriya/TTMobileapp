@@ -58,7 +58,8 @@ public class TimeEntryActivity extends Activity implements ITasks {
 	private TextView dateText;
 	private TextView startTimeText;
 	private TextView endTimeText;
-	private Button addEntrybutton,addToFavorites;
+
+	private Button addEntrybutton, addToFavorites;
 
 	String project_message;
 	String worktype_message;
@@ -141,16 +142,9 @@ public class TimeEntryActivity extends Activity implements ITasks {
 
 		showCurrentTime();
 		showTimePickerDialog();
-//		addToFavorites.setOnClickListener(new OnClickListener() {
-//          
-//          @Override
-//          public void onClick(View v) {
-//              // TODO Auto-generated method stub
-//              Intent startFavoritesIntent = new Intent(TimeEntryActivity.this, FavoritesActivity.class);
-//              startActivity(startFavoritesIntent);
-//          }
-//      });
-//		
+
+	
+	
 	}
 
 	/**
@@ -176,9 +170,11 @@ public class TimeEntryActivity extends Activity implements ITasks {
 		startTimeText = (TextView)findViewById(R.id.starttime);
 		endTimeText = (TextView)findViewById(R.id.endtime);
 		addEntrybutton = (Button)findViewById(R.id.addEntrybutton);
-		//addToFavorites = (Button)findViewById(R.id.btnfavorites);
+		addToFavorites = (Button)findViewById(R.id.btnfavorites);
+
 		descriptionEditText.setEnabled(false);
 		descriptionEditText.setCursorVisible(false);
+		addToFavorites.setVisibility(View.GONE);
 		addEntrybutton.setVisibility(View.GONE);
 
 	}
@@ -372,11 +368,27 @@ public class TimeEntryActivity extends Activity implements ITasks {
 				timeEntryList.add(2,timeEntry);
 				shareAdapter.notifyDataSetChanged();
 				descriptionEditText.setEnabled(true);
+				addToFavorites.setVisibility(View.VISIBLE);
+				//Calling Add Fvorites
+				addToFavorites.setOnClickListener(new OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						// TODO Auto-generated method stub
+						Intent startFavoritesIntent = new Intent(TimeEntryActivity.this, FavoritesActivity.class);
+						startActivityForResult(startFavoritesIntent,6);
+					}
+				});
 
 				addEntrybutton.setVisibility(View.VISIBLE);
 				addEntryEvent();
 
 			}
+			
+			if(requestCode == 6) { 
+				Log.d(TAG, "Favourites added");
+				Log.d(TAG, "nickname and colour are"+data.getStringExtra("NICKNAME")+data.getStringExtra("COLOURCODE"));
+			}			
 		}
 
 	}
@@ -396,6 +408,8 @@ public class TimeEntryActivity extends Activity implements ITasks {
 			mTasksListLoaded = true;
 		}
 
+		
+	
 		return false;
 	}
 
