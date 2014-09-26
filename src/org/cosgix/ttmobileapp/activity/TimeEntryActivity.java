@@ -369,17 +369,8 @@ public class TimeEntryActivity extends Activity implements ITasks {
 				shareAdapter.notifyDataSetChanged();
 				descriptionEditText.setEnabled(true);
 				addToFavorites.setVisibility(View.VISIBLE);
-				//Calling Add Fvorites
-				addToFavorites.setOnClickListener(new OnClickListener() {
-
-					@Override
-					public void onClick(View v) {
-						// TODO Auto-generated method stub
-						Intent startFavoritesIntent = new Intent(TimeEntryActivity.this, FavoritesActivity.class);
-						startActivityForResult(startFavoritesIntent,6);
-					}
-				});
-
+				//Calling Add to Favourites
+				addToFavouritesClickEvent();
 				addEntrybutton.setVisibility(View.VISIBLE);
 				addEntryEvent();
 
@@ -391,6 +382,22 @@ public class TimeEntryActivity extends Activity implements ITasks {
 			}			
 		}
 
+	}
+
+	/**
+	 * Method used for Calling Add to Favourites
+	 */
+	private void addToFavouritesClickEvent() {
+
+		addToFavorites.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Intent startFavoritesIntent = new Intent(TimeEntryActivity.this, FavoritesActivity.class);
+				startActivityForResult(startFavoritesIntent,6);
+			}
+		});
+		
 	}
 
 	@Override

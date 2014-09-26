@@ -155,7 +155,7 @@
             android:layout_below="@+id/listView1"
             android:background="@drawable/add_blue_btn"
             android:layout_marginRight="5dp"
-            android:text="AddTo Favourites"
+            android:text="@string/addtofavourites"
             android:textColor="@color/white"
             android:textSize="12sp" />
     </RelativeLayout>
