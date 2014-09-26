@@ -43,6 +43,10 @@ public class ProjectListActivity extends Activity {
 	
 	private int position;
 	String[] PROJECTS;
+	
+	String[] ALPHABETS_LIST = new String[] {"A","B","C","D","E","F","G",
+			"H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V",
+			"W","X","Y","Z"};
 
 	ListView listview;
 	private GestureDetector mGestureDetector;
@@ -91,7 +95,7 @@ public class ProjectListActivity extends Activity {
 			//tempProjectid = projects.getProjectId();
 		}
 		
-//		Arrays.sort(PROJECTS,String.CASE_INSENSITIVE_ORDER);
+		//Arrays.sort(PROJECTS,String.CASE_INSENSITIVE_ORDER);// task selection is related
 
 		listview = (ListView) findViewById(R.id.ListView01);
 
@@ -214,7 +218,8 @@ public class ProjectListActivity extends Activity {
 		tmpTV = null;
 
 		// we'll create the index list
-		indexList = createIndex(PROJECTS);
+		//indexList = createIndex(PROJECTS);
+		indexList = createIndex(ALPHABETS_LIST);
 
 		// number of items in the index List
 		indexListSize = indexList.size();
@@ -247,7 +252,7 @@ public class ProjectListActivity extends Activity {
 			tmpTV = new TextView(this);
 			tmpTV.setText(tmpLetter);
 			tmpTV.setGravity(Gravity.CENTER);
-			tmpTV.setTextSize(20);
+			tmpTV.setTextSize(17);
 			LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1);
 			tmpTV.setLayoutParams(params);
 			//			sideIndex.addView(tmpTV);
@@ -383,7 +388,7 @@ public class ProjectListActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.menu, menu);
+		//getMenuInflater().inflate(R.menu.menu, menu);
 		return true;
 	}
 

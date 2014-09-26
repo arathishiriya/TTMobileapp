@@ -11,6 +11,8 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import org.cosgix.ttmobileapp.data.GetProjects;
 import org.cosgix.ttmobileapp.data.GetWorkTypes;
@@ -40,6 +42,7 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 	private static final String TAG = "UpdateActivity";
 
 	ProgressDialog progressDialog;
+	private Button addTimeEntryButton;
 
 	GetProjects getProjects;
 	static List<Projects> ProjectsList;
@@ -75,11 +78,23 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 
 		showProgressDialog();
 
+		getWidgetId();
+
 		getProjects = new GetProjects(UpdateActivity.this);
 
 		getWorkTypes = new GetWorkTypes(UpdateActivity.this);
 
 		//startUpdateService();
+		
+		addTimeEntryButtonClickEvent();
+
+	}
+
+	private void getWidgetId() {
+
+		addTimeEntryButton = (Button)findViewById(R.id.addtimeentrybutton);
+
+		addTimeEntryButton.setVisibility(View.VISIBLE);
 
 	}
 
@@ -126,6 +141,7 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 	@Override
 	public void onBackPressed() {
 		//stopUpdateService();
+		//finish();
 		return;
 	}//onBackPressed
 
@@ -151,7 +167,7 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 		if(worktypeList != null) {
 			workTypeList = worktypeList;
 			cancelProgressDialog();
-			invokeTimeEntryActivity();
+			//invokeTimeEntryActivity();
 		}
 		else {
 			Log.e(TAG, "Work Type List is null");
@@ -165,7 +181,39 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 	 */
 	private void invokeTimeEntryActivity() {
 		Intent intent = new Intent(UpdateActivity.this,TimeEntryActivity.class);
-		startActivity(intent);
+		startActivityForResult(intent, 5);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+
+		if(data != null) {
+
+			// check if the request code is same as what is passed  here it is 5  
+			if(requestCode == 5) { 
+
+				addTimeEntryButton.setVisibility(View.VISIBLE);
+				addTimeEntryButtonClickEvent();
+
+			}
+		}
+	}	
+
+	/**
+	 * Add time Entry button event
+	 */
+	private void addTimeEntryButtonClickEvent() {
+
+		addTimeEntryButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				
+				invokeTimeEntryActivity() ;
+				
+			}
+		});
 	}
 
 	/**

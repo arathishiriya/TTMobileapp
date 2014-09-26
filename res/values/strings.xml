@@ -5,12 +5,15 @@
     <string name="hello_CoStrategix">hello CoStrategix !</string>
     <string name="login">Login !</string>
     <string name="update">Update</string>
+    <string name="addtimeentrybutton">AddTimeEntry</string>
     <string name="TimeEntryActivity">TimeEntryActivity</string>
     <string name="ProjectListActivity">ProjectListActivity</string>
     <string name="WorkTypeActivity">WorkTypeActivity</string>
     <string name="addtimeentry">Add Time entry</string>
+    <string name="addtoFavorites">Favourites</string>
     <string name="Description">Description:</string>
     <string name="addEntrybutton">ADD ENTRY</string>
+    <string name="addNickName">Nick Name:</string>
     <string name="AddEntryActivity">AddEntryActivity</string>
     <string name="selectaproject">Select a Project</string>
     <string name="selectaworktype">Select a WorkType</string>
@@ -27,7 +30,8 @@
     <string name="taskmessage">Task Message</string>
     <string name="taskstatus">Task not available</string>
     <string name="selectaprojectbeforetask">Please Select a Project first</string>
-
+ 	<string name="str_btn_show">Select a color</string>
+    <string name="btn_save">SAVE</string>
     <!-- Button text -->
 
 </resources>
