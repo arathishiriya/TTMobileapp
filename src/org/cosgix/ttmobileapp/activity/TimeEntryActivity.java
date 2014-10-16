@@ -1,16 +1,25 @@
 package org.cosgix.ttmobileapp.activity;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 import org.cosgix.ttmobileapp.R;
 
 import org.cosgix.ttmobileapp.adapter.TimeEntryArrayAdapter;
+import org.cosgix.ttmobileapp.data.Favourites;
 import org.cosgix.ttmobileapp.data.GetTasks;
 import org.cosgix.ttmobileapp.data.ITasks;
 import org.cosgix.ttmobileapp.data.Tasks;
 import org.cosgix.ttmobileapp.data.TimeEntryData;
 
+import org.cosgix.ttmobileapp.database.DatabaseHelper;
+import org.cosgix.ttmobileapp.database.TimeEntryTable;
+import org.cosgix.ttmobileapp.util.BaseUtil;
+
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.ActionBar;
 
 import android.app.Activity;
@@ -23,9 +32,12 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.graphics.drawable.ColorDrawable;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewConfiguration;
@@ -66,7 +78,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 	String task_message;
 
 	int selected_projectId;
-	int worktype_selected_index;
+	int selected_worktypeId;
 	int selected_taskId;
 
 	String taskName;
@@ -112,39 +124,89 @@ public class TimeEntryActivity extends Activity implements ITasks {
 		TasksList = tasksList;
 	}
 
+	//colour
+	String colour;
+	//nick name
+	String nickName;
+
+	Favourites favourites;
+
+	//List Favorites
+	List<Favourites> favouritesList = new ArrayList<Favourites>();
+
+	public List<Favourites> getFovouritesList() {
+		return favouritesList;
+	}
+
+	public void setFovouritesList(List<Favourites> fovouritesList) {
+		this.favouritesList = fovouritesList;
+	}
+	
+	String currentDate;
+	String updatedDate;
+	String userId;
+	
+	public static final String MyPREFERENCES = "MyPrefs" ;
+	SharedPreferences sharedpreferences;
+
+	// time entry data is required for creating/ writing the json data
 	TimeEntryData  timeEntryData;
+	// time entry activity is required to create the context
+	TimeEntryActivity timeEntryActivity;
+	// time entry database is required for inserting the record in the database
+	TimeEntryDatabase timeEntryDatabase = new TimeEntryDatabase(this);
+	// alert dialog is required for user selection
+	private AlertDialog show;
+
+	DatabaseHelper helper;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_timeentry);
 
+		timeEntryActivity = this;
+
+		helper = new DatabaseHelper(getApplicationContext());
+
+		displayCurrentDate();
+		getUsername();
+
+		// getting the widget id
 		getWidgetId();
 
+		// display the action bar
 		showActionBar();
 		getOverflowMenu();
 
+		// getting the time entry list details
 		timeEntryList = TimeEntryUtil.getTimeEntryListDeatils(this);
 
 		// time entry array adapter to display the items
 		shareAdapter = new TimeEntryArrayAdapter(this,R.layout.activity_timeentryrow, timeEntryList);
 		shareAdapter.notifyDataSetChanged();
 
+		// displaying the list item in the view
 		displayListItems();
 
+		// input method manger is required for validating the keyboard
 		inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-
+		// getting the description text
 		getDescriptionText();
-
+		// getting the current date and time using calendar
 		getCurrentDateTimeByCalendar();
+		// displaying the current date
 		showCurrentDate();
+		// displaying the date picker dialog
 		showDatePickerDialog();
 
+		// displaying the current times
 		showCurrentTime();
+		//displaying the time picker dialog
 		showTimePickerDialog();
 
-	
-	
+
+
 	}
 
 	/**
@@ -321,6 +383,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 			// check if the request code is same as what is passed  here it is 1  
 			if(requestCode == 1) { 
 
+				// getting the project message and project id
 				project_message = data.getStringExtra("PROJECT_MESSAGE");
 				selected_projectId =  data.getIntExtra("PROJECT_SELECTED",0);
 
@@ -340,8 +403,9 @@ public class TimeEntryActivity extends Activity implements ITasks {
 			}  
 			if(requestCode == 2) { 
 
+				// getting the worktype message and worktype id
 				worktype_message = data.getStringExtra("WORKTYPE_MESSAGE");
-				worktype_selected_index =  data.getIntExtra("WORKTYPE_SELECTED",0);
+				selected_worktypeId =  data.getIntExtra("WORKTYPE_SELECTED",0);
 
 				Log.d(TAG,"worktype_message" + worktype_message);
 				//shareAdapter.remove(shareAdapter.getItem(2));
@@ -358,6 +422,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 
 			if(requestCode == 4) { 
 
+				// getting the task name and task message and task id
 				shareAdapter.notifyDataSetChanged();
 				taskName = getTasks.getTaskName();
 				task_message = data.getStringExtra("TASKS_MESSAGE");
@@ -375,10 +440,27 @@ public class TimeEntryActivity extends Activity implements ITasks {
 				addEntryEvent();
 
 			}
-			
+
 			if(requestCode == 6) { 
 				Log.d(TAG, "Favourites added");
-				Log.d(TAG, "nickname and colour are"+data.getStringExtra("NICKNAME")+data.getStringExtra("COLOURCODE"));
+
+				// getting the nickname and colour of the favourites
+				nickName = data.getStringExtra("NICKNAME");
+				colour = data.getStringExtra("COLOURCODE");
+
+				Log.d(TAG, "nickname and colour are"+data.getStringExtra("NICKNAME") + data.getStringExtra("COLOURCODE"));
+
+				//Create A Favorite boject
+				favourites = new Favourites();
+				favourites.setProjectId(selected_projectId);
+				favourites.setWorktypeId(selected_worktypeId);
+				favourites.setTaskId(selected_taskId);
+				favourites.setNickName(nickName);
+				favourites.setColour(colour);
+
+				favouritesList.add(favourites);
+
+				Log.d(TAG, "favouritesList added" + favouritesList);
 			}			
 		}
 
@@ -397,7 +479,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 				startActivityForResult(startFavoritesIntent,6);
 			}
 		});
-		
+
 	}
 
 	@Override
@@ -415,8 +497,8 @@ public class TimeEntryActivity extends Activity implements ITasks {
 			mTasksListLoaded = true;
 		}
 
-		
-	
+
+
 		return false;
 	}
 
@@ -425,6 +507,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 	 */
 	private void getDescriptionText() {
 
+		// show keyboard on click of the edit text
 		descriptionEditText.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -437,6 +520,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 			}
 		});
 
+		// getting the description text values on click of the done button in keyboard
 		descriptionEditText.setOnEditorActionListener(new OnEditorActionListener() {
 
 			@Override
@@ -461,6 +545,9 @@ public class TimeEntryActivity extends Activity implements ITasks {
 
 	}
 
+	/**
+	 * This method provides the back button event
+	 */
 	@Override
 	public void onBackPressed() {
 
@@ -665,24 +752,27 @@ public class TimeEntryActivity extends Activity implements ITasks {
 			@Override
 			public void onClick(View arg0) {
 
-				// create json data
-				timeEntryData = new TimeEntryData(selected_projectId, selected_taskId, worktype_selected_index, descriptionText, mDate, timeIn, timeOut);
+				// create json data for the values
+				timeEntryData = new TimeEntryData(selected_projectId, selected_taskId, selected_worktypeId, descriptionText, mDate, timeIn, timeOut);
 				timeEntryData.createJsonData();
+				
+				displayUpdatedDate();
 
+				// displaying the alert dialog for user interaction
 				displayDialog();
 
-				// write json data to a file
+				// write json data to a file in sdcard
 				timeEntryData.writeJsonDatatoFile();
-				
+
 				if(!timeEntry.getTimeEntryName().equals("Project Name")) {
-					
+
 				}
 
 			}
 		});
 
 	}
-	
+
 	/**
 	 * method used to display the alert dialog to set the result
 	 */
@@ -702,7 +792,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 
 			}
 		});
-		
+
 		alertDialog.setNegativeButton(getResources().getString(R.string.No), new DialogInterface.OnClickListener() {
 
 			@Override
@@ -711,26 +801,121 @@ public class TimeEntryActivity extends Activity implements ITasks {
 				dialog.dismiss();
 				finish();
 
+				// save data to database when description text not equal to zero other wise display dialog
+				if(descriptionEditText.getText().length() == 0) {
+					show =new AlertDialog.Builder(timeEntryActivity)
+					.setTitle("Error")
+					.setMessage("Some inputs are empty")
+					.setPositiveButton("ok", null)
+					.setNegativeButton("cancel", null)
+					.show();	
+				}
+				if(descriptionEditText.getText().length() != 0) {
+					
+					sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+					
+					String emailid = sharedpreferences.getString("email", "");
+
+					// insert the time entry record to the database and used for sqlite db
+					//timeEntryDatabase.insertRecord(String.valueOf(selected_projectId), String.valueOf(selected_taskId), String.valueOf(selected_worktypeId), descriptionText, mDate, timeIn, timeOut);
+					System.out.println("insertRecord=" + selected_projectId + selected_taskId + selected_worktypeId + descriptionText + mDate + timeIn + timeOut);
+					//saveTimeEntryTableData(); // used for ormlite db
+					BaseUtil.insertTimeEntryTableData(TimeEntryActivity.this, selected_projectId, selected_worktypeId, selected_taskId,
+							descriptionText, timeIn, timeOut,
+							currentDate, updatedDate,
+							emailid); // userId or emailid
+
+					BaseUtil.insertProjectTableData(TimeEntryActivity.this, selected_projectId, project_message, timeIn, timeOut, 0);
+					BaseUtil.insertWorkTypeTableData(TimeEntryActivity.this, selected_worktypeId, worktype_message, descriptionText);
+					BaseUtil.insertTaskTableData(TimeEntryActivity.this, selected_taskId, taskName, timeIn);
+
+					// clear the description edit text
+					descriptionEditText.getText().clear();
+
+				}
+
+
 			}
 		});
 
+		// set alertdialog cancel false 
 		alertDialog.setCancelable(false);
 		AlertDialog builder = alertDialog.create();
-
+		// show dialog
 		if (!builder.isShowing()) {
 
 			builder.show();
 
 		}
+
+	}
+
+	/**
+	 * This method is used for saving the time entry table data if addData used 
+	 * and everything are used within Time Entry Table class and if no design done
+	 */
+	protected void saveTimeEntryTableData() {
+
+		TimeEntryTable timeEntryTable = new TimeEntryTable();
+		timeEntryTable.setProject_id(selected_projectId);
+		timeEntryTable.setWorktype_id(selected_worktypeId);
+		timeEntryTable.setTask_id(selected_taskId);
+		timeEntryTable.setDescription(descriptionText);
+		timeEntryTable.setStart_date(timeIn);
+		timeEntryTable.setEnd_date(timeOut);
+		timeEntryTable.setCreated_date_time(currentDate);
+		timeEntryTable.setUpdated_date_time(updatedDate);
+		timeEntryTable.setUser_id(userId);
+		helper.addData(timeEntryTable);
+
+	}
+
+	public void displayCurrentDate() {
+
+		Calendar calendar = Calendar.getInstance();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		currentDate = df.format(calendar.getTime());
+		Log.d("Current time => ",currentDate);
+
+	}
+	
+	public void displayUpdatedDate() {
 		
+		Calendar calendar = Calendar.getInstance();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		updatedDate = df.format(calendar.getTime());
+		Log.d("Current time => ",updatedDate);
+		
+	}
+	
+	public void getUsername(){
+	    AccountManager manager = AccountManager.get(this); 
+	    Account[] accounts = manager.getAccountsByType("com.google"); 
+
+	    for (Account account : accounts) {
+	      System.out.println("Account = Account" + account.name + account.type);
+		  userId = account.name;
+	    }
+
 	}
 
 	// inflate for action bar
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		//getMenuInflater().inflate(R.menu.menu, menu);
+		getMenuInflater().inflate(R.menu.menu, menu);
 		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		// favourites menu event
+		case R.id.favourites:
+			finish();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	// put the other menu on the three dots (overflow)

@@ -3,9 +3,13 @@ package org.cosgix.ttmobileapp.activity;
 import org.cosgix.ttmobileapp.R;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import com.google.android.gms.common.ConnectionResult;
@@ -15,6 +19,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.plus.Plus;
+import com.google.android.gms.plus.model.people.Person;
 
 
 /**
@@ -50,6 +55,9 @@ ConnectionCallbacks, OnConnectionFailedListener {
 
 	private SignInButton mLoginButton;
 
+	public static final String MyPREFERENCES = "MyPrefs" ;
+	SharedPreferences sharedpreferences;
+	Editor editor;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +161,38 @@ ConnectionCallbacks, OnConnectionFailedListener {
 		// Update the UI after signin
 		updateUI(true);
 		invokeUpdateActivity();
+		getProfileInformation();
 
+	}
+
+	/**
+	 * Fetching user's information name, email, profile pic
+	 * */
+	private void getProfileInformation() {
+		try {
+			sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+			editor = sharedpreferences.edit();
+
+			if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
+				Person currentPerson = Plus.PeopleApi
+						.getCurrentPerson(mGoogleApiClient);
+				String personName = currentPerson.getDisplayName();
+				String personPhotoUrl = currentPerson.getImage().getUrl();
+				String personGooglePlusProfile = currentPerson.getUrl();
+				String email = Plus.AccountApi.getAccountName(mGoogleApiClient);
+
+				editor.putString("personName", personName);
+				editor.putString("email", email);
+
+				editor.commit(); 
+
+				Log.e("TAG", "Name: " + personName + ", email: " + email + personPhotoUrl + personGooglePlusProfile);
+
+			} else {
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
