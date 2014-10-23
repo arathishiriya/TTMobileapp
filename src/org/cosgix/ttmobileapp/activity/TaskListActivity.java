@@ -79,6 +79,8 @@ public class TaskListActivity extends Activity {
 
 		// don't forget to sort our array (in case it's not sorted)
 		taskList = TimeEntryActivity.getTasksList();
+		
+		if(taskList != null) {
 		TASKS = new String[taskList.size()];
 		int i = 0;
 		for(Tasks tasks : taskList) {
@@ -93,6 +95,8 @@ public class TaskListActivity extends Activity {
 		mGestureDetector = new GestureDetector(this, new SideIndexGestureListener());
 
 		listItemClickEvent();
+		
+		}
 
 	}
 	

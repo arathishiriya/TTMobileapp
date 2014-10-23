@@ -7,8 +7,12 @@ import org.cosgix.ttmobileapp.R;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -19,8 +23,12 @@ import org.cosgix.ttmobileapp.data.GetWorkTypes;
 import org.cosgix.ttmobileapp.data.IProjects;
 import org.cosgix.ttmobileapp.data.IWorkTypes;
 import org.cosgix.ttmobileapp.data.Projects;
+import org.cosgix.ttmobileapp.data.Tasks;
 import org.cosgix.ttmobileapp.data.WorkTypes;
+import org.cosgix.ttmobileapp.database.DatabaseHelper;
+import org.cosgix.ttmobileapp.database.DatabaseManager;
 import org.cosgix.ttmobileapp.services.UpdateService;
+import org.cosgix.ttmobileapp.util.BaseUtil;
 
 /**
  * Update Activity is responsible to fetch all the project related data from the webserver 
@@ -69,23 +77,59 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 	public  void setWorkTypeList(List<WorkTypes> worktypeList) {
 		workTypeList = worktypeList;
 	}
+	
+	private DatabaseHelper databaseHelper;
+	private boolean dbExist;
+	
+	UpdateActivity context;
+	
+	String emailid ;
+	public static final String MyPREFERENCES = "MyPrefs" ;
+	SharedPreferences sharedpreferences;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_update);
+		
+		context = this;
+		
+		databaseHelper = DatabaseManager.getHelper(context);
+		
+		sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+		
+		emailid = sharedpreferences.getString("email", "");
 
-		showProgressDialog();
+		dbExist = databaseHelper.checkdatabase();
 
+		if(!dbExist){
+			showProgressDialog();
+			getDataAfterInterval(context);
+			getProjects = new GetProjects(UpdateActivity.this);
+
+			getWorkTypes = new GetWorkTypes(UpdateActivity.this);
+			
+		}
+		else {
+			// cancel dialog
+			getDataAfterInterval(context);
+			getProjects = new GetProjects(UpdateActivity.this);
+
+			getWorkTypes = new GetWorkTypes(UpdateActivity.this);
+		}
+		
+//		showProgressDialog();
+//		getDataAfterInterval(context);
+		
 		getWidgetId();
 
-		getProjects = new GetProjects(UpdateActivity.this);
-
-		getWorkTypes = new GetWorkTypes(UpdateActivity.this);
+//		getProjects = new GetProjects(UpdateActivity.this);
+//
+//		getWorkTypes = new GetWorkTypes(UpdateActivity.this);
 
 		//startUpdateService();
-		
+
 		addTimeEntryButtonClickEvent();
 
 	}
@@ -96,6 +140,20 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 
 		addTimeEntryButton.setVisibility(View.VISIBLE);
 
+	}
+	
+	public void getDataAfterInterval(Context context) {
+
+		Intent downloader = new Intent(UpdateActivity.this, MyStartServiceReceiver.class);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, downloader, PendingIntent.FLAG_UPDATE_CURRENT);
+		AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,System.currentTimeMillis(),5000, pendingIntent);
+
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
 	}
 
 	/**
@@ -206,12 +264,12 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 	private void addTimeEntryButtonClickEvent() {
 
 		addTimeEntryButton.setOnClickListener(new View.OnClickListener() {
-			
+
 			@Override
 			public void onClick(View arg0) {
-				
+
 				invokeTimeEntryActivity() ;
-				
+
 			}
 		});
 	}
@@ -248,6 +306,41 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 
 		// Close the progress dialog
 		progressDialog.dismiss();
+
+		saveServerDataToDatabase();
+	}
+
+	public void saveServerDataToDatabase() {
+
+		String [] PROJECTS = new String[getProjectsList().size()];
+		String project = "";
+		int i = 0;
+		Projects proj = new Projects();
+		for(Projects projects : getProjectsList()) {
+			PROJECTS[i++] = projects.getProjectName();
+			project = projects.getProjectName();
+			BaseUtil.insertProjectListTableData(UpdateActivity.this, 0, project);
+			project = null;
+		}
+
+		String [] WORKTYPES = new String[getWorkTypeList().size()];
+		String worktype = "";
+		int j = 0;
+		for(WorkTypes workTypes : getWorkTypeList()) {
+			WORKTYPES[j++] = workTypes.getWorktypeName();
+			worktype = workTypes.getWorktypeName();
+			BaseUtil.insertWorkTypeListTableData(UpdateActivity.this, 1, worktype);
+		}
+
+		//		String [] TASKS = new String[TimeEntryActivity.getTasksList().size()];
+		//		String task = "";
+		//		int k = 0;
+		//		for(Tasks tasks : TimeEntryActivity.getTasksList()) {
+		//			TASKS[k++] = tasks.getTaskName();
+		//			task = tasks.getTaskName();
+		//			BaseUtil.insertTaskListTableData(UpdateActivity.this, 2, task);
+		//		}
+
 	}
 
 }

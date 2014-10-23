@@ -25,9 +25,11 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -160,6 +162,8 @@ public class TimeEntryActivity extends Activity implements ITasks {
 
 	DatabaseHelper helper;
 
+	private boolean dbExist;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -274,6 +278,8 @@ public class TimeEntryActivity extends Activity implements ITasks {
 					else if(mProjectClicked && mTasksListLoaded) {
 
 						invokeTasksListActivity();
+						
+						saveServerDataToDatabase();
 					}
 					else {
 						Log.d(TAG,"Please wait, data downloading from the server");
@@ -424,10 +430,16 @@ public class TimeEntryActivity extends Activity implements ITasks {
 
 				// getting the task name and task message and task id
 				shareAdapter.notifyDataSetChanged();
+				
+				dbExist = helper.checkdatabase();
+				
+				if(dbExist){
+				getDataAfterInterval(timeEntryActivity);
 				taskName = getTasks.getTaskName();
 				task_message = data.getStringExtra("TASKS_MESSAGE");
 				selected_taskId = getTasks.getTaskId();
 				Log.d(TAG,"taskName" + taskName + task_message);
+				}
 				timeEntryList.remove(2);
 				timeEntry.setTimeEntryName(task_message);
 				timeEntryList.add(2,timeEntry);
@@ -463,6 +475,15 @@ public class TimeEntryActivity extends Activity implements ITasks {
 				Log.d(TAG, "favouritesList added" + favouritesList);
 			}			
 		}
+
+	}
+	
+	public void getDataAfterInterval(Context context) {
+
+		Intent downloader = new Intent(TimeEntryActivity.this, MyStartServiceReceiver.class);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, downloader, PendingIntent.FLAG_UPDATE_CURRENT);
+		AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,System.currentTimeMillis(),5000, pendingIntent);
 
 	}
 
@@ -897,6 +918,19 @@ public class TimeEntryActivity extends Activity implements ITasks {
 		  userId = account.name;
 	    }
 
+	}
+	
+	public void saveServerDataToDatabase() {
+		
+		String [] TASKS = new String[TimeEntryActivity.getTasksList().size()];
+		String task = "";
+		int k = 0;
+		for(Tasks tasks : TimeEntryActivity.getTasksList()) {
+			TASKS[k++] = tasks.getTaskName();
+			task = tasks.getTaskName();
+			BaseUtil.insertTaskListTableData(TimeEntryActivity.this, 2, task);
+		}
+		
 	}
 
 	// inflate for action bar

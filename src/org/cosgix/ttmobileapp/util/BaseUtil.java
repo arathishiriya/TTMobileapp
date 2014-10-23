@@ -1,11 +1,17 @@
 package org.cosgix.ttmobileapp.util;
 
+import org.cosgix.ttmobileapp.database.ProjectListTable;
+import org.cosgix.ttmobileapp.database.ProjectListTableRepository;
 import org.cosgix.ttmobileapp.database.ProjectTable;
 import org.cosgix.ttmobileapp.database.ProjectTableRepository;
+import org.cosgix.ttmobileapp.database.TaskListTable;
+import org.cosgix.ttmobileapp.database.TaskListTableRepository;
 import org.cosgix.ttmobileapp.database.TaskTable;
 import org.cosgix.ttmobileapp.database.TaskTableRepository;
 import org.cosgix.ttmobileapp.database.TimeEntryTable;
 import org.cosgix.ttmobileapp.database.TimeEntryTableRepository;
+import org.cosgix.ttmobileapp.database.WorkTypeListTable;
+import org.cosgix.ttmobileapp.database.WorkTypeListTablerepository;
 import org.cosgix.ttmobileapp.database.WorkTypeTable;
 import org.cosgix.ttmobileapp.database.WorkTypeTableRepository;
 
@@ -19,6 +25,10 @@ import android.app.Activity;
  *
  */
 public class BaseUtil {
+	
+	public static boolean insertProjectFlag = false;
+	public static boolean insertWorkTypeFlag = false;
+	public static boolean insertTaskFlag = false;
 	
 	/**
 	 * This method inserting the time entry table data to the database
@@ -97,5 +107,50 @@ public class BaseUtil {
 		TaskTableRepository.create(taskTable);
 		
 	}
-
+	
+	public static void insertProjectListTableData(Activity activity,int selected_projectId,
+			String project_name) {
+		
+		ProjectListTableRepository projectListTableRepository = new ProjectListTableRepository(activity);
+		
+		ProjectListTable projectListTable = new ProjectListTable();
+		projectListTable.setProject_id(selected_projectId);
+		projectListTable.setProject_name(project_name);
+		
+		projectListTableRepository.create(projectListTable);
+		
+		insertProjectFlag = true;
+		
+	}
+	
+	public static void insertWorkTypeListTableData(Activity activity,int worktype_id,
+			String worktype_name) {
+		
+		WorkTypeListTablerepository workTypeListTableRepository = new WorkTypeListTablerepository(activity);
+		
+		WorkTypeListTable workTypeListTable = new WorkTypeListTable();
+		workTypeListTable.setWorktype_id(worktype_id);
+		workTypeListTable.setWorktype_name(worktype_name);
+		
+		workTypeListTableRepository.create(workTypeListTable);
+		
+		insertWorkTypeFlag = true;
+		
+	}
+	
+	public static void insertTaskListTableData(Activity activity,int task_id,
+			String task_name) {
+		
+		TaskListTableRepository taskListTableRepository = new TaskListTableRepository(activity);
+		
+		TaskListTable taskListTable = new TaskListTable();
+		taskListTable.setTask_id(task_id);
+		taskListTable.setTask_name(task_name);
+		
+		taskListTableRepository.create(taskListTable);
+		
+		insertTaskFlag = true;
+		
+	}
+	
 }

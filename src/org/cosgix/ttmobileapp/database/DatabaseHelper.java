@@ -1,5 +1,6 @@
 package org.cosgix.ttmobileapp.database;
 
+import java.io.File;
 import java.sql.SQLException;
 
 import android.content.Context;
@@ -13,7 +14,7 @@ import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
-	
+
 	private Context context;
 	// name of the database file for your application -- change to something
 	// appropriate for your app
@@ -25,11 +26,15 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	// the DAO object we use to access the any table
 	private Dao<TimeEntryTable, String> simpleDao = null;
 	private RuntimeExceptionDao<TimeEntryTable, String> simpleRuntimeDao = null;
-	
+
 	private Dao<ProjectTable, String> projectTableDao = null;
 	private Dao<WorkTypeTable, String> workTypeTableDao = null;
 	private Dao<TaskTable, String> taskTableDao = null;
-	
+
+	private Dao<ProjectListTable, String> projectListTableDao = null;
+	private Dao<WorkTypeListTable, String> workTypeListTableDao = null;
+	private Dao<TaskListTable, String> taskListTableDao = null;
+
 	public DatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 		this.context = context;
@@ -40,10 +45,15 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 		try {
 			Log.i(DatabaseHelper.class.getName(), "onCreate");
-			TableUtils.createTable(connectionSource, TimeEntryTable.class);
-			TableUtils.createTable(connectionSource, ProjectTable.class);
-			TableUtils.createTable(connectionSource, WorkTypeTable.class);
-			TableUtils.createTable(connectionSource, TaskTable.class);
+			TableUtils.createTableIfNotExists(connectionSource, TimeEntryTable.class);
+			TableUtils.createTableIfNotExists(connectionSource, ProjectTable.class);
+			TableUtils.createTableIfNotExists(connectionSource, WorkTypeTable.class);
+			TableUtils.createTableIfNotExists(connectionSource, TaskTable.class);
+
+			TableUtils.createTableIfNotExists(connectionSource, ProjectListTable.class);
+			TableUtils.createTableIfNotExists(connectionSource, WorkTypeListTable.class);
+			TableUtils.createTableIfNotExists(connectionSource, TaskListTable.class);
+
 		} catch (SQLException e) {
 			Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
 			throw new RuntimeException(e);
@@ -61,6 +71,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, ProjectTable.class, true);
 			TableUtils.dropTable(connectionSource, WorkTypeTable.class, true);
 			TableUtils.dropTable(connectionSource, TaskTable.class, true);
+
+			TableUtils.dropTable(connectionSource, ProjectListTable.class, true);
+			TableUtils.dropTable(connectionSource, WorkTypeListTable.class, true);
+			TableUtils.dropTable(connectionSource, TaskListTable.class, true);
+
 			// after we drop the old databases, we create the new ones
 			onCreate(db, connectionSource);
 		} catch (SQLException e) {
@@ -69,7 +84,22 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		}
 
 	}
-	
+
+	/*
+	 * Check whether or not database exist
+	 */
+	public boolean checkdatabase() {
+		boolean checkdb = false;
+
+		String myPath = DATABASE_NAME;
+		File dbfile = new File(myPath);
+		checkdb = dbfile.exists();
+
+		Log.i(DatabaseHelper.class.getName(), "DB Exist : " + checkdb);
+
+		return checkdb;
+	}
+
 	/**
 	 * Returns the Database Access Object (DAO) for our Time Entry Table Data class. It
 	 * will create it or just give the cached value.
@@ -87,7 +117,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		}
 		return simpleRuntimeDao;
 	}
-	
+
 	/**
 	 * Returns the Database Access Object (DAO) for our Project Table Data class. It
 	 * will create it or just give the cached value.
@@ -98,7 +128,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		}
 		return projectTableDao;
 	}
-	
+
 	/**
 	 * Returns the Database Access Object (DAO) for our WorkTypeTable data class. It
 	 * will create it or just give the cached value.
@@ -109,7 +139,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		}
 		return workTypeTableDao;
 	}
-	
+
 	/**
 	 * Returns the Database Access Object (DAO) for our TaskTable data class. It
 	 * will create it or just give the cached value.
@@ -120,7 +150,40 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		}
 		return taskTableDao;
 	}
-	
+
+	/**
+	 * Returns the Database Access Object (DAO) for our Project Table Data class. It
+	 * will create it or just give the cached value.
+	 */
+	public Dao<ProjectListTable, String> getProjectListTableDao() throws SQLException {
+		if (projectListTableDao == null) {
+			projectListTableDao = getDao(ProjectListTable.class);
+		}
+		return projectListTableDao;
+	}
+
+	/**
+	 * Returns the Database Access Object (DAO) for our WorkTypeTable data class. It
+	 * will create it or just give the cached value.
+	 */
+	public Dao<WorkTypeListTable, String> getWorkTypeListTableDao() throws SQLException {
+		if (workTypeListTableDao == null) {
+			workTypeListTableDao = getDao(WorkTypeListTable.class);
+		}
+		return workTypeListTableDao;
+	}
+
+	/**
+	 * Returns the Database Access Object (DAO) for our TaskTable data class. It
+	 * will create it or just give the cached value.
+	 */
+	public Dao<TaskListTable, String> getTaskListTableDao() throws SQLException {
+		if (taskListTableDao == null) {
+			taskListTableDao = getDao(TaskListTable.class);
+		}
+		return taskListTableDao;
+	}
+
 	// method for insert data if no design done
 	public int addData(TimeEntryTable timeEntryTable) {
 		Log.d("addData","Test 1---");
@@ -134,7 +197,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		}
 		return i;
 	}
-	
+
 	/**
 	 * Close the database connections and clear any cached DAOs.
 	 */

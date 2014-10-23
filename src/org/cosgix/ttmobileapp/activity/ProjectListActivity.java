@@ -40,10 +40,10 @@ public class ProjectListActivity extends Activity {
 
 	// variables declaration
 	private static final String TAG = "ProjectListActivity";
-	
+
 	private int position;
 	String[] PROJECTS;
-	
+
 	String[] ALPHABETS_LIST = new String[] {"A","B","C","D","E","F","G",
 			"H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V",
 			"W","X","Y","Z"};
@@ -73,7 +73,7 @@ public class ProjectListActivity extends Activity {
 	List<Projects> projectsList;
 	List<Tasks> tasksList;
 	String mTasks;
-	
+
 	HashMap<String, String> hashmap = new HashMap<String, String>();
 
 	@Override
@@ -88,13 +88,14 @@ public class ProjectListActivity extends Activity {
 		// don't forget to sort our array (in case it's not sorted)
 		projectsList=UpdateActivity.getProjectsList();
 		//tasksList = UpdateActivity.getTasksList();
-		PROJECTS = new String[projectsList.size()];
-		int i = 0;
-		for(Projects projects : projectsList) {
-			PROJECTS[i++] = projects.getProjectName();
-			//tempProjectid = projects.getProjectId();
-		}
-		
+		if(projectsList != null) {
+			PROJECTS = new String[projectsList.size()];
+			int i = 0;
+			for(Projects projects : projectsList) {
+				PROJECTS[i++] = projects.getProjectName();
+				//tempProjectid = projects.getProjectId();
+			}
+
 		//Arrays.sort(PROJECTS,String.CASE_INSENSITIVE_ORDER);// task selection is related
 
 		listview = (ListView) findViewById(R.id.ListView01);
@@ -103,6 +104,8 @@ public class ProjectListActivity extends Activity {
 		mGestureDetector = new GestureDetector(this, new SideIndexGestureListener());
 
 		listItemClickEvent();
+		
+		}
 
 	}
 
@@ -210,6 +213,8 @@ public class ProjectListActivity extends Activity {
 
 		super.onWindowFocusChanged(hasFocus);
 
+		try {
+		
 		sideIndex = (LinearLayout) findViewById(R.id.sideIndex);
 		sideIndexHeight = sideIndex.getHeight();
 		sideIndex.removeAllViews();
@@ -284,6 +289,10 @@ public class ProjectListActivity extends Activity {
 				return false;
 			}
 		});
+		
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 
@@ -320,7 +329,7 @@ public class ProjectListActivity extends Activity {
 				// we know as well a scroll distance
 				sideIndexX = sideIndexX - distanceX;
 				sideIndexY = sideIndexY - distanceY;
-				
+
 				Log.d(TAG, "sideIndexX=2" + sideIndexX);
 				Log.d(TAG, "sideIndexY=2" + sideIndexY);
 
@@ -357,7 +366,7 @@ public class ProjectListActivity extends Activity {
 
 			// get the item (we can do it since we know item index)
 			Object[] indexItem = indexList.get(itemPosition);
-			
+
 			Log.d(TAG, "pixelPerIndexItem" + pixelPerIndexItem);
 			Log.d(TAG, "itemPosition" + itemPosition);
 			Log.d(TAG, "minPosition" + minPosition);
@@ -367,7 +376,7 @@ public class ProjectListActivity extends Activity {
 			int indexMin = Integer.parseInt(indexItem[1].toString());
 			int indexMax = Integer.parseInt(indexItem[2].toString());
 			int indexDelta = Math.max(1, indexMax - indexMin);
-			
+
 			Log.d(TAG, "indexMin & indexMax & indexDelta" + indexMin + "\n" 
 					+ "\n" + indexMax + "\n" + indexDelta);
 
@@ -375,7 +384,7 @@ public class ProjectListActivity extends Activity {
 			int subitemPosition = (int) (indexMin + (sideIndexY - minPosition) / pixelPerSubitem);
 
 			Log.d(TAG, "pixelPerSubitem & subitemPosition" + pixelPerSubitem + "\n" + subitemPosition);
-			
+
 			ListView listView = (ListView) findViewById(R.id.ListView01);
 			listView.setSelection(subitemPosition);
 

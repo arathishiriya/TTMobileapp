@@ -86,6 +86,8 @@ public class WorkTypeActivity extends Activity {
 
 		// don't forget to sort our array (in case it's not sorted)
 		workTypeList = UpdateActivity.getWorkTypeList();
+		
+		if(workTypeList != null) {
 		WORKTYPES = new String[workTypeList.size()];
 		int i = 0;
 		for(WorkTypes workTypes : workTypeList) {
@@ -101,6 +103,8 @@ public class WorkTypeActivity extends Activity {
 		mGestureDetector = new GestureDetector(this, new SideIndexGestureListener());
 
 		listItemClickEvent();
+		
+		}
 
 	}
 	
@@ -208,6 +212,8 @@ public class WorkTypeActivity extends Activity {
 
 		super.onWindowFocusChanged(hasFocus);
 
+		try {
+		
 		sideIndex = (LinearLayout) findViewById(R.id.sideIndex);
 		sideIndexHeight = sideIndex.getHeight();
 		sideIndex.removeAllViews();
@@ -282,6 +288,10 @@ public class WorkTypeActivity extends Activity {
 				return false;
 			}
 		});
+		
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 
