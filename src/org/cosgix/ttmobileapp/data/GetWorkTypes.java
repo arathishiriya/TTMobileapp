@@ -82,7 +82,7 @@ public class GetWorkTypes implements IResponseHandler,IResponseParser{
 	}
 
 	@Override
-	public boolean onResponseContentReceive(String content) {
+	public boolean onResponseContentReceive(String content,int StatusCode) {
 
 		Log.i(TAG,"Server Response : " + content);
 		if(content != null) {

@@ -29,7 +29,7 @@ public interface IResponseHandler {
 	 * Returned value false means need to be process more, true means finished.
 	 * 
 	 */
-	public boolean onResponseContentReceive(String content);
+	public boolean onResponseContentReceive(String content,int statusCode);
 	
 	/**
 	 * 
@@ -53,4 +53,5 @@ public interface IResponseHandler {
 	 * 
 	 */
 	public void onRequestFailed( Exception e);
+	
 }

@@ -1,5 +1,9 @@
 package org.cosgix.ttmobileapp.util;
 
+import java.util.List;
+
+import org.cosgix.ttmobileapp.database.FavouritesTable;
+import org.cosgix.ttmobileapp.database.FavouritesTableRepository;
 import org.cosgix.ttmobileapp.database.ProjectListTable;
 import org.cosgix.ttmobileapp.database.ProjectListTableRepository;
 import org.cosgix.ttmobileapp.database.ProjectTable;
@@ -29,6 +33,8 @@ public class BaseUtil {
 	public static boolean insertProjectFlag = false;
 	public static boolean insertWorkTypeFlag = false;
 	public static boolean insertTaskFlag = false;
+	
+	List<ProjectListTable> projectList;
 	
 	/**
 	 * This method inserting the time entry table data to the database
@@ -138,18 +144,54 @@ public class BaseUtil {
 		
 	}
 	
-	public static void insertTaskListTableData(Activity activity,int task_id,
+	public static void insertTaskListTableData(Activity activity,int project_id,
 			String task_name) {
 		
 		TaskListTableRepository taskListTableRepository = new TaskListTableRepository(activity);
 		
 		TaskListTable taskListTable = new TaskListTable();
-		taskListTable.setTask_id(task_id);
+		taskListTable.setProject_id(project_id);
 		taskListTable.setTask_name(task_name);
 		
 		taskListTableRepository.create(taskListTable);
 		
 		insertTaskFlag = true;
+		
+	}
+	
+	public static void insertFavouritesTableData(Activity activity,int project_id,
+			String project_name,int worktype_id,String worktype_name,int task_id,
+			String task_name,String user_id,String created_date_time,String updated_date_time,
+			String nickName,String colour) {
+		
+		FavouritesTableRepository favouritesTableRepository = new FavouritesTableRepository(activity);
+		
+		FavouritesTable favouritesTable = new FavouritesTable();
+		favouritesTable.setProject_id(project_id);
+		favouritesTable.setProject_name(project_name);
+		favouritesTable.setWorktype_id(worktype_id);
+		favouritesTable.setWorktype_name(worktype_name);
+		favouritesTable.setTask_id(task_id);
+		favouritesTable.setTask_name(task_name);
+		favouritesTable.setUser_id(user_id);
+		favouritesTable.setCreated_date_time(created_date_time);
+		favouritesTable.setUpdated_date_time(updated_date_time);
+		favouritesTable.setNickName(nickName);
+		favouritesTable.setColour(colour);
+		
+		favouritesTableRepository.create(favouritesTable);
+		
+	}
+	
+	public static void getProjectListData(Activity activity) {
+		
+		ProjectListTableRepository projectListTableRepository = new ProjectListTableRepository(activity);
+		projectListTableRepository.getProjectListData();
+		
+	}
+	
+	public void deleteDatabase() {
+		
 		
 	}
 	

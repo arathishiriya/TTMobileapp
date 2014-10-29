@@ -31,46 +31,23 @@ public class GetTasks implements IResponseHandler,IResponseParser{
 	private boolean downloadTasksStatus = false;
 	private static final String TAG = "GetTasks";
 
-	List<Tasks> taskList;
+	
+	Boolean threadProcessing= false;
+	int currentItem=0;
+	int[] projectids = null;
+	List<Tasks>[] taskList = null;
+	AsyncTask<String, String, Object>task[] = null;
 	protected  ITasks iTasks;
 	JSONArray jsonArray;
 	JSONObject jsonObj;
 
 	public String response;
 	
-	public int taskId;
-	
-	public int getTaskId() {
-		return taskId;
-	}
-
-	public void setTaskId(int taskId) {
-		this.taskId = taskId;
-	}
-
-	public String taskName;
-
-	public String getTaskName() {
-		return taskName;
-	}
-
-	public void setTaskName(String taskName) {
-		this.taskName = taskName;
-	}
 
 	public RequestProcessor processor = null;
-	int Projectid;
+	
 
-	// getter method for project id
-	public int getProjectid() {
-		return Projectid;
-	}
-
-	// setter method for project id
-	public void setProjectid(int projectid) {
-		Projectid = projectid;
-	}
-
+	
 	private HashMap<String, String> map = null;
 
 	{
@@ -78,41 +55,33 @@ public class GetTasks implements IResponseHandler,IResponseParser{
 		//map.put("callback", "showIP");		
 	}
 
-	/**
-	 * method used as a constructor to initialize
-	 * @param context
-	 */
-	public GetTasks(Context context) {
-
-		this.context = context;
-		this.iTasks = (ITasks) context;
-		taskList = new ArrayList<Tasks>();
-
-		processor = new GETRequestProcessor(Const.SERVER_URL,Const.GET_TASK_PATH+Projectid, WebServicesConst.TT_HTTP_GET,this , map, this);
-
-		AsyncTask<String, String, Object> task = 
-				new WebServicesAsyncTask(context,processor);
-		task.execute("Fetch Response");
-
-	}
-
+	
+	
 	/**
 	 * method used as a constructor to initialize with project id
 	 * @param context
 	 * @param projectid
 	 */
-	public GetTasks(Context context,int projectid) {
+	public GetTasks(Context context,int[] projectids) {
 
 		this.context = context;
 		this.iTasks = (ITasks) context;
-		taskList = new ArrayList<Tasks>();
 
-		processor = new GETRequestProcessor(Const.SERVER_URL,Const.GET_TASK_PATH+projectid, WebServicesConst.TT_HTTP_GET,this , map, this);
+		taskList = (List<Tasks>[])new ArrayList[projectids.length];
+		task = new AsyncTask[projectids.length];
+		
+		this.projectids = projectids;
+		
+		for(int i=0;i<projectids.length;i++)
+		{
+			
+				processor = new GETRequestProcessor(Const.SERVER_URL,Const.GET_TASK_PATH+projectids[i], WebServicesConst.TT_HTTP_GET,this , map, this);
+				task[i] =new WebServicesAsyncTask(context,processor);				
+				task[i].execute("Fetch Response");
 
-		AsyncTask<String, String, Object> task = 
-				new WebServicesAsyncTask(context,processor);
-		task.execute("Fetch Response");
+		}
 
+		
 	}
 
 
@@ -126,24 +95,43 @@ public class GetTasks implements IResponseHandler,IResponseParser{
 
 			return false;
 		}	
-		else {	
-
+		else if(statusCode == 404) {	
+			taskList[currentItem]=new ArrayList<Tasks>();
+			Tasks tasks = new Tasks();
+			tasks.setProjectId(this.projectids[currentItem]);
+			tasks.setTaskName("");
+			tasks.setTaskId(0);
+			taskList[currentItem].add(tasks);
+			currentItem++; //This is for incrementing to the next element
+			Log.i(TAG,"GetTasks returned 404 but is valid to have no tasks for a particular project " );
+			
+			return true;
+		}
+		else
+		{
 			return true;
 		}
 	}
 
 	@Override
-	public boolean onResponseContentReceive(String content) {
+	public boolean onResponseContentReceive(String content,int statusCode) {
+		if(statusCode == 200) {
+			
 
-		Log.i(TAG,"GetTasks Server Response : " + content);
-		if(content != null) {
-			response = content;
-			downloadTasksStatus = true;
-		}
-		taskList = getListOfTasks();
-
-		if (this.iTasks != null) {
-			iTasks.tasksDownloadDone(taskList);
+			Log.i(TAG,"GetTasks Server Response : " + content);
+			if(content != null) {
+				response = content;
+				downloadTasksStatus = true;
+				taskList[currentItem] = getListOfTasks();
+				currentItem++;
+				if (projectids.length == currentItem)
+				{
+					if (this.iTasks != null) {
+						iTasks.tasksDownloadDone(taskList);
+					}
+				}
+			}
+	
 		}
 		return false;
 	}
@@ -187,31 +175,25 @@ public class GetTasks implements IResponseHandler,IResponseParser{
 			try {
 
 				jsonArray = new JSONArray(response);
-
+			    
+				taskList[currentItem]=new ArrayList<Tasks>();
+				
 				for(int i = 0; i < jsonArray.length(); i++) {
 
 					Tasks tasks = new Tasks();
-
 					jsonObj = jsonArray.getJSONObject(i);
-
-					taskId = jsonObj.getInt("id");
-					taskName = jsonObj.getString("name");
-
-
-					tasks.setTaskId(taskId);
-					tasks.setTaskName(taskName);
-
-					Log.i(TAG,"Tasks details" + tasks.getTaskId() + tasks.getTaskName());
-
-					taskList.add(tasks);
-
+					tasks.setTaskId(jsonObj.getInt("id"));
+					tasks.setTaskName(jsonObj.getString("name"));
+					tasks.setProjectId(this.projectids[currentItem]);
+					Log.i(TAG,"Tasks details" + tasks.getprojectId() + tasks.getTaskName());
+					taskList[currentItem].add(tasks);
 				}
 
 			} catch(Exception e) {
 				Log.i(TAG,"Json Tasks error");
 			}
 		}
-		return taskList;
+		return taskList[currentItem];
 
 	}
 

@@ -34,6 +34,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private Dao<ProjectListTable, String> projectListTableDao = null;
 	private Dao<WorkTypeListTable, String> workTypeListTableDao = null;
 	private Dao<TaskListTable, String> taskListTableDao = null;
+	
+	private Dao<FavouritesTable, String> favouritesTableDao = null;
 
 	public DatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -53,6 +55,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTableIfNotExists(connectionSource, ProjectListTable.class);
 			TableUtils.createTableIfNotExists(connectionSource, WorkTypeListTable.class);
 			TableUtils.createTableIfNotExists(connectionSource, TaskListTable.class);
+			
+			TableUtils.createTableIfNotExists(connectionSource, FavouritesTable.class);
 
 		} catch (SQLException e) {
 			Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
@@ -75,6 +79,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, ProjectListTable.class, true);
 			TableUtils.dropTable(connectionSource, WorkTypeListTable.class, true);
 			TableUtils.dropTable(connectionSource, TaskListTable.class, true);
+			
+			TableUtils.dropTable(connectionSource, FavouritesTable.class, true);
 
 			// after we drop the old databases, we create the new ones
 			onCreate(db, connectionSource);
@@ -98,6 +104,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		Log.i(DatabaseHelper.class.getName(), "DB Exist : " + checkdb);
 
 		return checkdb;
+	}
+	
+	public void deleteDatabase() {
+		
+		context.deleteDatabase(DATABASE_NAME);
+		
 	}
 
 	/**
@@ -182,6 +194,17 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			taskListTableDao = getDao(TaskListTable.class);
 		}
 		return taskListTableDao;
+	}
+	
+	/**
+	 * Returns the Database Access Object (DAO) for our FavouritesTable data class. It
+	 * will create it or just give the cached value.
+	 */
+	public Dao<FavouritesTable, String> getFavouritesTableDao() throws SQLException {
+		if (favouritesTableDao == null) {
+			favouritesTableDao = getDao(FavouritesTable.class);
+		}
+		return favouritesTableDao;
 	}
 
 	// method for insert data if no design done

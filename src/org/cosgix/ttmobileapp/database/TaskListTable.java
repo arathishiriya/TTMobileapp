@@ -19,7 +19,7 @@ public class TaskListTable {
 	@DatabaseField(generatedId = true)
 	private int id;
 	@DatabaseField() 
-	private int task_id;
+	private int project_id;
 	@DatabaseField() 
 	private String task_name;
 
@@ -29,11 +29,11 @@ public class TaskListTable {
 	public void setId(int id) {
 		this.id = id;
 	}
-	public int getTask_id() {
-		return task_id;
+	public int getProject_id() {
+		return project_id;
 	}
-	public void setTask_id(int task_id) {
-		this.task_id = task_id;
+	public void setProject_id(int task_id) {
+		this.project_id = task_id;
 	}
 	public String getTask_name() {
 		return task_name;
@@ -47,7 +47,7 @@ public class TaskListTable {
 		
 		StringBuilder sb = new StringBuilder();  
 		sb.append(id);  
-		sb.append(", ").append(task_id);  
+		sb.append(", ").append(project_id);  
 		sb.append(", ").append(task_name);  
 
 		return sb.toString();  

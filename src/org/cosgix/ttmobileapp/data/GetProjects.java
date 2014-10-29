@@ -85,7 +85,7 @@ public class GetProjects implements IResponseHandler,IResponseParser{
 	}
 
 	@Override
-	public boolean onResponseContentReceive(String content) {
+	public boolean onResponseContentReceive(String content,int StatusCode) {
 
 		Log.i(TAG,"GetProjects Server Response : " + content);
 		if(content != null)	{

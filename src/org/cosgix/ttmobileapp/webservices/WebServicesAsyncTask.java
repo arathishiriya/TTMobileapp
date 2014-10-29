@@ -54,7 +54,7 @@ private static final String TAG = "WebServicesAsyncTask";
 		}	
 	}
 	@Override
-	public boolean onResponseContentReceive(String content) {
+	public boolean onResponseContentReceive(String content,int StatusCode) {
 		Log.d(TAG, "Server Response : " + content);
 		return false;
 	}

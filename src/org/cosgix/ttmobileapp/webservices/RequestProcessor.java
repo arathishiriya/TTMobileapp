@@ -162,7 +162,7 @@ abstract public  class RequestProcessor implements IResponseParser {
 			String content = getResponseContent(inputStream);
 			
 			// If parsing response is also needed by the application.
-			flag = responseHandler.onResponseContentReceive(content);
+			flag = responseHandler.onResponseContentReceive(content,statusCode);
 			// Parsing the content.
 			Object object = parseContent(content);
 			responseHandler.onParsedDataReceive(object);

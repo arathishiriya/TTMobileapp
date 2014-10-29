@@ -13,20 +13,25 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import org.cosgix.ttmobileapp.data.GetProjects;
+import org.cosgix.ttmobileapp.data.GetTasks;
 import org.cosgix.ttmobileapp.data.GetWorkTypes;
 import org.cosgix.ttmobileapp.data.IProjects;
+import org.cosgix.ttmobileapp.data.ITasks;
 import org.cosgix.ttmobileapp.data.IWorkTypes;
 import org.cosgix.ttmobileapp.data.Projects;
 import org.cosgix.ttmobileapp.data.Tasks;
 import org.cosgix.ttmobileapp.data.WorkTypes;
 import org.cosgix.ttmobileapp.database.DatabaseHelper;
 import org.cosgix.ttmobileapp.database.DatabaseManager;
+import org.cosgix.ttmobileapp.database.ProjectListTable;
+import org.cosgix.ttmobileapp.database.ProjectListTableRepository;
 import org.cosgix.ttmobileapp.services.UpdateService;
 import org.cosgix.ttmobileapp.util.BaseUtil;
 
@@ -43,7 +48,7 @@ import org.cosgix.ttmobileapp.util.BaseUtil;
  * @author Sanjib
  * 
  */
-public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
+public class UpdateActivity extends Activity implements IProjects, IWorkTypes,ITasks{
 
 	// variables declaration
 	@SuppressWarnings("unused")
@@ -57,6 +62,12 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 
 	GetWorkTypes getWorkTypes;
 	static List<WorkTypes> workTypeList;
+
+	GetTasks getTasks;
+	List<Tasks>[] mTasksList;
+	
+	List<ProjectListTable> projectListTable = null;
+	ProjectListTable [] projectListArray =null;
 
 	// getter method for project list
 	public static List<Projects> getProjectsList() {
@@ -78,38 +89,44 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 		workTypeList = worktypeList;
 	}
 	
+	private int projectListSize = 21;
+
 	private DatabaseHelper databaseHelper;
 	private boolean dbExist;
-	
+	private boolean flagExist = false;
+
 	UpdateActivity context;
-	
+
 	String emailid ;
 	public static final String MyPREFERENCES = "MyPrefs" ;
 	SharedPreferences sharedpreferences;
+	Editor editor;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_update);
-		
+
 		context = this;
-		
+
 		databaseHelper = DatabaseManager.getHelper(context);
-		
+
 		sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
-		
+
 		emailid = sharedpreferences.getString("email", "");
 
 		dbExist = databaseHelper.checkdatabase();
 
-		if(!dbExist){
+		boolean flag = sharedpreferences.getBoolean("flagExist", false);
+
+		if(!flag){
 			showProgressDialog();
 			getDataAfterInterval(context);
 			getProjects = new GetProjects(UpdateActivity.this);
 
 			getWorkTypes = new GetWorkTypes(UpdateActivity.this);
-			
+
 		}
 		else {
 			// cancel dialog
@@ -118,15 +135,15 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 
 			getWorkTypes = new GetWorkTypes(UpdateActivity.this);
 		}
-		
-//		showProgressDialog();
-//		getDataAfterInterval(context);
-		
+
+		//		showProgressDialog();
+		//		getDataAfterInterval(context);
+
 		getWidgetId();
 
-//		getProjects = new GetProjects(UpdateActivity.this);
-//
-//		getWorkTypes = new GetWorkTypes(UpdateActivity.this);
+		//		getProjects = new GetProjects(UpdateActivity.this);
+		//
+		//		getWorkTypes = new GetWorkTypes(UpdateActivity.this);
 
 		//startUpdateService();
 
@@ -141,7 +158,7 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 		addTimeEntryButton.setVisibility(View.VISIBLE);
 
 	}
-	
+
 	public void getDataAfterInterval(Context context) {
 
 		Intent downloader = new Intent(UpdateActivity.this, MyStartServiceReceiver.class);
@@ -150,7 +167,7 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,System.currentTimeMillis(),5000, pendingIntent);
 
 	}
-	
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -216,6 +233,17 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 		}
 
 		return true;
+	}
+
+	@Override
+	public boolean tasksDownloadDone(List<Tasks>[] tasksList) {
+		// get the tasks list if not null 
+		if(tasksList != null) {
+			mTasksList = tasksList;
+		}
+		
+		PutToDB();
+		return false;
 	}
 
 	@Override
@@ -308,19 +336,26 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 		progressDialog.dismiss();
 
 		saveServerDataToDatabase();
+		saveTasksDataToDatabase();
+
+		flagExist = true;
+		SharedPreferences sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+		editor = sharedpreferences.edit();
+		editor.putBoolean("flagExist", flagExist);
+
+		editor.commit(); 
 	}
 
 	public void saveServerDataToDatabase() {
 
 		String [] PROJECTS = new String[getProjectsList().size()];
-		String project = "";
+		String projectName = "";
 		int i = 0;
 		Projects proj = new Projects();
 		for(Projects projects : getProjectsList()) {
 			PROJECTS[i++] = projects.getProjectName();
-			project = projects.getProjectName();
-			BaseUtil.insertProjectListTableData(UpdateActivity.this, 0, project);
-			project = null;
+			projectName = projects.getProjectName();
+			BaseUtil.insertProjectListTableData(UpdateActivity.this, projects.getProjectId(), projectName);
 		}
 
 		String [] WORKTYPES = new String[getWorkTypeList().size()];
@@ -343,4 +378,36 @@ public class UpdateActivity extends Activity implements IProjects, IWorkTypes {
 
 	}
 
+	public void saveTasksDataToDatabase() {
+
+		ProjectListTableRepository projectListTableRepository = new ProjectListTableRepository(UpdateActivity.this);
+
+		projectListTable = projectListTableRepository.getProjectListData();
+
+		projectListArray = projectListTable.toArray(new ProjectListTable[projectListTable.size()]);
+		int [] projectIds = null;
+		projectIds = new int[projectListArray.length];
+		for(int i = 0; i < projectListArray.length; i++) {
+			projectIds[i]=projectListArray[i].getProject_id();
+		}
+	
+		@SuppressWarnings("unused")
+		GetTasks getTasks = new GetTasks(UpdateActivity.this,projectIds);
+
+
+	}
+	
+	public void PutToDB()
+	{
+		for(int i = 0; i < projectListArray.length; i++) {
+			for(Tasks task : mTasksList[i]) {
+				if(task!=null)
+				{
+					BaseUtil.insertTaskListTableData(UpdateActivity.this, projectListArray[i].getProject_id(), task.getTaskName());
+				}
+			}
+			
+		}
+	
+	}
 }

@@ -1,10 +1,12 @@
 package org.cosgix.ttmobileapp.database;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import android.content.Context;
 
 import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
 
 /**
  * This class provides the database helper instance and provides the table operation
@@ -46,6 +48,17 @@ public class ProjectListTableRepository {
 		}
 		return 0;
 		
+	}
+	
+	// method for list of Project
+	public List<ProjectListTable> getProjectListData() {
+		List<ProjectListTable> list = null;
+		try {
+		list = projectListTableDao.queryForAll();
+		} catch(Exception e) {
+			
+		}
+		return list;
 	}
 
 }

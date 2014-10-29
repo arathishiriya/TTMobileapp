@@ -15,6 +15,8 @@ import org.cosgix.ttmobileapp.data.Tasks;
 import org.cosgix.ttmobileapp.data.TimeEntryData;
 
 import org.cosgix.ttmobileapp.database.DatabaseHelper;
+import org.cosgix.ttmobileapp.database.ProjectListTable;
+import org.cosgix.ttmobileapp.database.ProjectListTableRepository;
 import org.cosgix.ttmobileapp.database.TimeEntryTable;
 import org.cosgix.ttmobileapp.util.BaseUtil;
 
@@ -115,7 +117,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 	List<TimeEntry> timeEntryList;
 	TimeEntryArrayAdapter shareAdapter;
 	GetTasks getTasks;
-	List<Tasks> mTasksList;
+	List<Tasks>[] mTasksList;
 	static List<Tasks> TasksList;
 
 	public static List<Tasks> getTasksList() {
@@ -279,7 +281,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 
 						invokeTasksListActivity();
 						
-						saveServerDataToDatabase();
+						//saveTaskServerDataToDatabase();
 					}
 					else {
 						Log.d(TAG,"Please wait, data downloading from the server");
@@ -393,9 +395,27 @@ public class TimeEntryActivity extends Activity implements ITasks {
 				project_message = data.getStringExtra("PROJECT_MESSAGE");
 				selected_projectId =  data.getIntExtra("PROJECT_SELECTED",0);
 
-				getTasks = new GetTasks(TimeEntryActivity.this,selected_projectId);
-				TasksList = getTasks.getListOfTasks();
-				taskName = getTasks.getTaskName();
+//				try {
+//				ProjectListTableRepository projectListTableRepository = new ProjectListTableRepository(TimeEntryActivity.this);
+//				List<ProjectListTable> projectListTable = null;
+//				projectListTable = projectListTableRepository.getProjectListData();
+//				ProjectListTable [] projectListArray =null;
+//				projectListArray = projectListTable.toArray(new ProjectListTable[projectListTable.size()]);
+//
+//				int [] projectIds;
+//				projectIds = new int[projectListArray.length];
+//				for(int i = 1; i < projectListArray.length; i++) {
+//					projectListArray[i].setProject_id(selected_projectId);
+//					projectIds[i]=projectListArray[i].getProject_id();
+//				}
+////				getTasks = new GetTasks(TimeEntryActivity.this,selected_projectId);
+//				getTasks = new GetTasks(TimeEntryActivity.this,projectIds);
+//				TasksList = getTasks.getListOfTasks();
+//				for(Tasks tasks : TasksList) {
+//				taskName = tasks.getTaskName();
+//				}
+//				
+//				} catch(Exception e) {}
 
 				Log.d(TAG,"message" + project_message);
 				//shareAdapter.remove(shareAdapter.getItem(0));
@@ -428,28 +448,30 @@ public class TimeEntryActivity extends Activity implements ITasks {
 
 			if(requestCode == 4) { 
 
-				// getting the task name and task message and task id
-				shareAdapter.notifyDataSetChanged();
-				
-				dbExist = helper.checkdatabase();
-				
-				if(dbExist){
-				getDataAfterInterval(timeEntryActivity);
-				taskName = getTasks.getTaskName();
-				task_message = data.getStringExtra("TASKS_MESSAGE");
-				selected_taskId = getTasks.getTaskId();
-				Log.d(TAG,"taskName" + taskName + task_message);
-				}
-				timeEntryList.remove(2);
-				timeEntry.setTimeEntryName(task_message);
-				timeEntryList.add(2,timeEntry);
-				shareAdapter.notifyDataSetChanged();
-				descriptionEditText.setEnabled(true);
-				addToFavorites.setVisibility(View.VISIBLE);
-				//Calling Add to Favourites
-				addToFavouritesClickEvent();
-				addEntrybutton.setVisibility(View.VISIBLE);
-				addEntryEvent();
+//				// getting the task name and task message and task id
+//				shareAdapter.notifyDataSetChanged();
+//				
+//				dbExist = helper.checkdatabase();
+//				
+//				if(dbExist){
+//				getDataAfterInterval(timeEntryActivity);
+//				for(Tasks tasks : TasksList) {
+//				taskName = tasks.getTaskName();
+//				}
+//				task_message = data.getStringExtra("TASKS_MESSAGE");
+//				selected_taskId = getTasks.getProjectid();
+//				Log.d(TAG,"taskName" + taskName + task_message);
+//				}
+//				timeEntryList.remove(2);
+//				timeEntry.setTimeEntryName(task_message);
+//				timeEntryList.add(2,timeEntry);
+//				shareAdapter.notifyDataSetChanged();
+//				descriptionEditText.setEnabled(true);
+//				addToFavorites.setVisibility(View.VISIBLE);
+//				//Calling Add to Favourites
+//				addToFavouritesClickEvent();
+//				addEntrybutton.setVisibility(View.VISIBLE);
+//				addEntryEvent();
 
 			}
 
@@ -504,13 +526,13 @@ public class TimeEntryActivity extends Activity implements ITasks {
 	}
 
 	@Override
-	public boolean tasksDownloadDone(List<Tasks> tasksList) {
+	public boolean tasksDownloadDone(List<Tasks>[] tasksList) {
 
-		for(Tasks tasks: tasksList) {
-			Log.d(TAG,"tasks" + tasks.getTaskName());
-
-			//tempProjectid = projects.getProjectId();
-		}
+//		for(Tasks tasks: tasksList) {
+//			Log.d(TAG,"tasks" + tasks.getTaskName());
+//
+//			//tempProjectid = projects.getProjectId();
+//		}
 
 		// get the tasks list if not null 
 		if(tasksList != null) {
@@ -837,18 +859,26 @@ public class TimeEntryActivity extends Activity implements ITasks {
 					
 					String emailid = sharedpreferences.getString("email", "");
 
-					// insert the time entry record to the database and used for sqlite db
+					// insert the time entry record to the database and // used for sqlite db
 					//timeEntryDatabase.insertRecord(String.valueOf(selected_projectId), String.valueOf(selected_taskId), String.valueOf(selected_worktypeId), descriptionText, mDate, timeIn, timeOut);
 					System.out.println("insertRecord=" + selected_projectId + selected_taskId + selected_worktypeId + descriptionText + mDate + timeIn + timeOut);
 					//saveTimeEntryTableData(); // used for ormlite db
-					BaseUtil.insertTimeEntryTableData(TimeEntryActivity.this, selected_projectId, selected_worktypeId, selected_taskId,
+					BaseUtil.insertTimeEntryTableData(TimeEntryActivity.this, selected_projectId, 
+							selected_worktypeId, selected_taskId,
 							descriptionText, timeIn, timeOut,
 							currentDate, updatedDate,
 							emailid); // userId or emailid
 
-					BaseUtil.insertProjectTableData(TimeEntryActivity.this, selected_projectId, project_message, timeIn, timeOut, 0);
-					BaseUtil.insertWorkTypeTableData(TimeEntryActivity.this, selected_worktypeId, worktype_message, descriptionText);
-					BaseUtil.insertTaskTableData(TimeEntryActivity.this, selected_taskId, taskName, timeIn);
+					BaseUtil.insertProjectTableData(TimeEntryActivity.this, selected_projectId,
+							project_message, timeIn, timeOut, 0);
+					BaseUtil.insertWorkTypeTableData(TimeEntryActivity.this, selected_worktypeId,
+							worktype_message, descriptionText);
+					BaseUtil.insertTaskTableData(TimeEntryActivity.this, selected_taskId, 
+							taskName, timeIn);
+					
+					BaseUtil.insertFavouritesTableData(TimeEntryActivity.this, selected_projectId, project_message,
+							selected_worktypeId, worktype_message, selected_taskId, taskName, emailid,
+							currentDate, updatedDate, nickName, colour);
 
 					// clear the description edit text
 					descriptionEditText.getText().clear();
@@ -920,7 +950,7 @@ public class TimeEntryActivity extends Activity implements ITasks {
 
 	}
 	
-	public void saveServerDataToDatabase() {
+	public void saveTaskServerDataToDatabase() {
 		
 		String [] TASKS = new String[TimeEntryActivity.getTasksList().size()];
 		String task = "";

@@ -11,21 +11,21 @@ import com.j256.ormlite.dao.Dao;
  * @author Sanjib
  *
  */
-public class TaskTableRepository {
+public class FavouritesTableRepository {
 	
 	private DatabaseHelper databaseHelper;
 	
-	private Dao<TaskTable, String> taskTableDao = null;
+	private Dao<FavouritesTable, String> favouritesTableDao = null;
 	
 	/**
 	 * constructor for getting the database helper instance
 	 * @param context
 	 */
-	public TaskTableRepository(Context context) {
+	public FavouritesTableRepository(Context context) {
 		
 		try {
 	 	    databaseHelper = DatabaseManager.getHelper(context);
-	 	   taskTableDao = databaseHelper.getTaskTableDao();
+	 	   favouritesTableDao = databaseHelper.getFavouritesTableDao();
 		} catch (java.sql.SQLException e) {
 			e.printStackTrace();
 		}
@@ -34,13 +34,13 @@ public class TaskTableRepository {
 	
 	/**
 	 * creating the table
-	 * @param taskTable
+	 * @param favouritesTable
 	 * @return
 	 */
-	public int create(TaskTable taskTable) {
+	public int create(FavouritesTable favouritesTable) {
 		
 		try {
-			return taskTableDao.create(taskTable);
+			return favouritesTableDao.create(favouritesTable);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
